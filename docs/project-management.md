@@ -12,6 +12,9 @@ contiene risultato richiesto, acceptance criteria, dipendenze e test; le
 dipendenze sono testuali e fanno riferimento ai codici `WA-XX`, senza creare
 GitHub Issues.
 
+La descrizione operativa delle fasi, delle attività e dei rispettivi criteri di
+uscita è disponibile in [`development-phases.md`](development-phases.md).
+
 ## Stima e ripartizione
 
 L'effort usa la scala 1, 2, 3, 5 e 8 story point. La stima considera ampiezza,

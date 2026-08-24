@@ -19,3 +19,5 @@ GitHub Issues come unità di lavoro.
 
 La WBS, le regole operative e la Definition of Done sono descritte in
 [`docs/project-management.md`](docs/project-management.md).
+Le attività da svolgere in ciascuna fase sono illustrate in
+[`docs/development-phases.md`](docs/development-phases.md).
