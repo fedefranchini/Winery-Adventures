@@ -1,0 +1,4 @@
+# Copie locali della consegna del professore: la baseline versionata conserva
+# test, dataset, generatore e licenza, senza duplicare questi due documenti.
+docs/professor-assignment.md
+docs/professor-material.md
