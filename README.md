@@ -21,3 +21,9 @@ La WBS, le regole operative e la Definition of Done sono descritte in
 [`docs/project-management.md`](docs/project-management.md).
 Le attività da svolgere in ciascuna fase sono illustrate in
 [`docs/development-phases.md`](docs/development-phases.md).
+
+## Development setup
+
+I requisiti dell'ambiente, la procedura di installazione e i comandi per la
+verifica del codice sono descritti in
+[`docs/development-setup.md`](docs/development-setup.md).
