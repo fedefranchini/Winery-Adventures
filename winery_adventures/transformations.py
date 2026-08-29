@@ -28,12 +28,11 @@ class WineryTransformer(BaseWineryAnalyzer):
     def add_num_readings_per_grape_variety(self, df: pl.DataFrame) -> pl.DataFrame:
         """Aggiunge per ogni lettura il numero di rilevazioni di varietà d'uva corrispondente."""
 
-        #Join con le informazioni sulle cisterne
+        # Join con le informazioni sulle cisterne
         df = self.tank_info.join(df, on="tank_id")
 
-        #Espande la lista di varietà d'uva in una riga per varietà, così da poter ricontare le rilevazioni per varietà
+        # Espande la lista di varietà d'uva in una riga per varietà, così da poter ricontare le rilevazioni per varietà
         df = df.explode("grape_variety")
 
-        #Conta le rilevazioni per varietàò d'uva e aggiunge la colonna al DataFrame originale
+        # Conta le rilevazioni per varietàò d'uva e aggiunge la colonna al DataFrame originale
         return df.with_columns(pl.len().over("grape_variety").alias("grape_variety_num_readings"))
-
