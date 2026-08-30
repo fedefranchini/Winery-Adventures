@@ -10,14 +10,15 @@ class WineryTransformer(BaseWineryAnalyzer):
 
     STANDARD_TEMPERATURE = 26.0
 
-    def __init__(self, tank_info: pl.DataFrame | None):
+    def __init__(self, tank_info: pl.DataFrame | None = None):
         self.tank_info = tank_info
 
     def analyze_data(self, df: pl.DataFrame) -> pl.DataFrame:
         """Applica in sequenza le trasformazioni disponibili."""
         df = self.add_avg_ph_per_tank(df)
         df = self.add_num_readings_per_tank(df)
-        df = self.add_num_readings_per_grape_variety(df)
+        if self.tank_info is not None:
+            df = self.add_num_readings_per_grape_variety(df)
         return self.add_temperature_deviation(df)
 
     def add_avg_ph_per_tank(self, df: pl.DataFrame) -> pl.DataFrame:
