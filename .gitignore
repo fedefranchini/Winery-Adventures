@@ -4,3 +4,8 @@ docs/professor-assignment.md
 docs/professor-material.md
 .DS_Store
 **/.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+winery_adventures.egg-info/
