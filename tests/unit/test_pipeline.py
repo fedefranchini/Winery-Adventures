@@ -1,3 +1,5 @@
+import logging
+
 import polars as pl
 
 import wandb
@@ -42,3 +44,18 @@ def test_log_wandb(monkey_wandb_run):
 
     assert wandb.run == monkey_wandb_run, "wandb.init() should be called"
     assert any("stress_score" in d for d in monkey_wandb_run.logs), "No 'stress_score' logs found"
+
+
+def test_pipeline_logs_phases_without_sensor_values(caplog, sensors_df):
+    class MockAnalyzer:
+        def analyze_data(self, df):
+            return df
+
+    pipeline = WineryPipeline([MockAnalyzer()])
+
+    with caplog.at_level(logging.INFO):
+        pipeline.run(sensors_df)
+
+    assert "Running analyzer MockAnalyzer" in caplog.text
+    assert "Winery pipeline completed" in caplog.text
+    assert "3.3" not in caplog.text

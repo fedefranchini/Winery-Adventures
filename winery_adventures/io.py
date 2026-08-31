@@ -6,7 +6,33 @@ Non applicano trasformazioni sui dati: quello è compito di
 ``WineryTransformer`` e ``WineryHPCComputations``.
 """
 
+import logging
+from pathlib import Path
+
 import polars as pl
+
+from winery_adventures.validation import (
+    DataValidationError,
+    validate_sensors,
+    validate_tank_info,
+)
+
+logger = logging.getLogger(__name__)
+
+
+def _read_tsv(path: str, dataset_name: str) -> pl.DataFrame:
+    # Verifica il percorso prima di delegare la lettura a Polars.
+    input_path = Path(path)
+    if not input_path.is_file():
+        logger.error("%s file was not found", dataset_name)
+        raise FileNotFoundError(f"{dataset_name} file not found: {path}")
+
+    # Converte gli errori del parser in un errore applicativo più comprensibile.
+    try:
+        return pl.read_csv(input_path, separator="\t")
+    except pl.exceptions.PolarsError as exc:
+        logger.error("Unable to read %s as a valid TSV file", dataset_name)
+        raise DataValidationError(f"Unable to read {dataset_name} as a valid TSV file") from exc
 
 
 def read_sensors(path: str) -> pl.DataFrame:
@@ -22,7 +48,11 @@ def read_sensors(path: str) -> pl.DataFrame:
     Returns:
         Il DataFrame con i dati grezzi dei sensori.
     """
-    return pl.read_csv(path, separator="\t")
+    # Valida le letture prima che raggiungano trasformazioni e calcoli HPC.
+    df = _read_tsv(path, "Sensor data")
+    validate_sensors(df)
+    logger.info("Sensor data loaded and validated (%d rows)", df.height)
+    return df
 
 
 def read_tank_info(path: str) -> pl.DataFrame:
@@ -40,7 +70,10 @@ def read_tank_info(path: str) -> pl.DataFrame:
     Returns:
         Il DataFrame con ``grape_variety`` già splittata in lista.
     """
-    df = pl.read_csv(path, separator="\t")
+    # La validazione avviene sulla stringa originale, prima dello split dei vitigni.
+    df = _read_tsv(path, "Tank information")
+    validate_tank_info(df)
+    logger.info("Tank information loaded and validated (%d rows)", df.height)
     return df.with_columns(pl.col("grape_variety").str.split(","))
 
 
@@ -51,4 +84,11 @@ def write_output(df: pl.DataFrame, path: str) -> None:
         df: il DataFrame finale (trasformazioni + HPC applicate) da salvare.
         path: percorso del file di output.
     """
-    df.write_csv(path)
+    # Mantiene un messaggio uniforme in caso di percorso di output non scrivibile.
+    try:
+        df.write_csv(path)
+    except OSError as exc:
+        logger.error("Unable to write pipeline output")
+        raise OSError(f"Unable to write pipeline output: {path}") from exc
+
+    logger.info("Pipeline output written (%d rows)", df.height)

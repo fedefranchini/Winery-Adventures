@@ -4,12 +4,8 @@ docs/professor-assignment.md
 docs/professor-material.md
 .DS_Store
 **/.DS_Store
-.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
-.coverage
-htmlcov/
-*.egg-info/
-data/full_*.tsv
+winery_adventures.egg-info/
