@@ -1,3 +1,5 @@
+"""Punto di ingresso per l'esecuzione completa di Winery Adventures."""
+
 import joblib
 
 from winery_adventures.computations import WineryHPCComputations
@@ -6,12 +8,30 @@ from winery_adventures.pipeline import WineryPipeline
 from winery_adventures.transformations import WineryTransformer
 
 
-def run_full_pipeline(input_csv, tank_info_csv=None, output_csv="output.csv", project_name=None):
-    """Legge i dati (in parallelo), esegue la pipeline e scrive il risultato.
+def run_full_pipeline(
+    input_csv: str,
+    tank_info_csv: str | None = None,
+    output_csv: str = "output.csv",
+    project_name: str | None = None,
+) -> None:
+    """Carica i dati, esegue gli analyzer e salva il risultato.
 
-    tank_info_csv opzionale: se non
-        fornito, la pipeline funziona comunque, saltando le trasformazioni
-        che richiedono i dati delle cisterne (es. conteggio per varietà).
+    La lettura dei due dataset avviene in parallelo quando sono presenti sia i
+    sensori sia le informazioni delle cisterne. Il logging remoto su W&B viene
+    delegato alla pipeline. Se ``tank_info_csv`` non è fornito, vengono saltate
+    soltanto le trasformazioni che richiedono l'anagrafica delle cisterne.
+
+    Args:
+        input_csv: percorso del TSV contenente le letture dei sensori.
+        tank_info_csv: percorso opzionale del TSV con le informazioni delle
+            cisterne.
+        output_csv: destinazione CSV del risultato elaborato.
+        project_name: nome del progetto W&B a cui inviare le metriche.
+
+    Raises:
+        FileNotFoundError: se un file di input richiesto non esiste.
+        DataValidationError: se un dataset non rispetta il contratto previsto.
+        OSError: se il risultato non può essere scritto.
     """
     results = {}
 

@@ -13,7 +13,16 @@ def pairwise_stress_function(
     temp_vals: np.ndarray,
     quantity_vals: np.ndarray,
 ) -> float:
-    """Calcola lo stress medio confrontando tutte le coppie di letture."""
+    """Calcola lo stress medio confrontando tutte le coppie di letture.
+
+    Args:
+        pH_vals: valori di pH ordinati per lettura.
+        temp_vals: temperature ordinate nello stesso modo dei valori di pH.
+        quantity_vals: quantità in litri associate alle letture.
+
+    Returns:
+        Lo stress medio delle coppie, oppure ``0.0`` se gli array sono vuoti.
+    """
     # Il numero di letture delimita i cicli e serve per la normalizzazione finale.
     n = len(pH_vals)
 
@@ -44,7 +53,18 @@ class WineryHPCComputations(BaseWineryAnalyzer):
     """Raggruppa i calcoli numerici intensivi applicati alle letture."""
 
     def analyze_data(self, df: pl.DataFrame) -> pl.DataFrame:
-        """Calcola e assegna lo stress di fermentazione di ogni cisterna."""
+        """Calcola e assegna lo stress di fermentazione di ogni cisterna.
+
+        Args:
+            df: letture contenenti ``tank_id``, ``pH``, ``temp`` e
+                ``quantity_liters``.
+
+        Returns:
+            Una copia logica delle letture con la colonna ``stress_score``.
+
+        Raises:
+            polars.exceptions.ColumnNotFoundError: se manca una colonna richiesta.
+        """
         stress_by_tank = {}
 
         # Suddivide il DataFrame per cisterna mantenendo l'ordine originale dei gruppi.
