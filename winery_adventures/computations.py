@@ -2,12 +2,12 @@
 
 import numpy as np
 import polars as pl
-from numba import njit
+from numba import njit, prange
 
 from winery_adventures.base import BaseWineryAnalyzer
 
 
-@njit
+@njit(parallel=True)
 def pairwise_stress_function(
     pH_vals: np.ndarray,
     temp_vals: np.ndarray,
@@ -24,7 +24,8 @@ def pairwise_stress_function(
     stress_sum = 0.0
 
     # Confronta ogni lettura con tutte le altre, incluse le coppie inverse.
-    for i in range(n):
+    # 'prange' parallelizza il ciclo esterno sfruttando più core della CPU, il ciclo interno rimane sequenziale.
+    for i in prange(n):
         for j in range(n):
             # Misura le differenze tra la coppia, attribuendo peso doppio alla temperatura.
             pH_dev = abs(pH_vals[i] - pH_vals[j])
