@@ -40,11 +40,15 @@ dev = [
     "ruff>=0.5,<1",
 ]
 
+[tool.setuptools]
+# Il benchmark riusa il generatore fornito come modulo Python installabile.
+py-modules = ["data_generator"]
+
 [tool.setuptools.packages.find]
-# Ricerca soltanto il package applicativo, escludendo implicitamente tests,
-# data e docs dalla lista dei package Python installabili.
+# Installa il package applicativo e il runner dei benchmark, escludendo tests,
+# data e docs dalla distribuzione.
 where = ["."]
-include = ["winery_adventures*"]
+include = ["winery_adventures*", "benchmarks*"]
 
 [tool.pytest.ini_options]
 # I test originali del docente usano il marker slow nel test di accettazione. La sua
