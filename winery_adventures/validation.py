@@ -47,7 +47,17 @@ def _require_integer(df: pl.DataFrame, column: str, dataset_name: str) -> None:
 
 
 def validate_sensors(df: pl.DataFrame) -> None:
-    """Verifica schema e valori essenziali delle letture dei sensori."""
+    """Verifica schema e valori essenziali delle letture dei sensori.
+
+    Controlla colonne obbligatorie, presenza di righe e valori, tipi, intervallo
+    del pH, finitezza delle temperature e positività delle quantità opzionali.
+
+    Args:
+        df: dataset dei sensori da validare.
+
+    Raises:
+        DataValidationError: se il dataset non rispetta uno dei vincoli.
+    """
     # Applica prima i controlli strutturali comuni a tutte le letture.
     _require_columns(df, SENSOR_REQUIRED_COLUMNS, "Sensor data")
     _require_rows(df, "Sensor data")
@@ -81,7 +91,17 @@ def validate_sensors(df: pl.DataFrame) -> None:
 
 
 def validate_tank_info(df: pl.DataFrame) -> None:
-    """Verifica schema e valori essenziali delle informazioni sulle cisterne."""
+    """Verifica schema e valori essenziali delle informazioni sulle cisterne.
+
+    Controlla colonne obbligatorie, tipi, vitigni non vuoti, capacità positive e
+    unicità degli identificativi.
+
+    Args:
+        df: anagrafica delle cisterne da validare.
+
+    Raises:
+        DataValidationError: se il dataset non rispetta uno dei vincoli.
+    """
     # Controlla la struttura prima dello split della colonna grape_variety.
     _require_columns(df, TANK_INFO_REQUIRED_COLUMNS, "Tank information")
     _require_rows(df, "Tank information")

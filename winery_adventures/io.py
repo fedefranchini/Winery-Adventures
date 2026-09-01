@@ -47,6 +47,11 @@ def read_sensors(path: str) -> pl.DataFrame:
 
     Returns:
         Il DataFrame con i dati grezzi dei sensori.
+
+    Raises:
+        FileNotFoundError: se il percorso non identifica un file.
+        DataValidationError: se il TSV non è leggibile o non rispetta il
+            contratto dei sensori.
     """
     # Valida le letture prima che raggiungano trasformazioni e calcoli HPC.
     df = _read_tsv(path, "Sensor data")
@@ -69,6 +74,11 @@ def read_tank_info(path: str) -> pl.DataFrame:
 
     Returns:
         Il DataFrame con ``grape_variety`` già splittata in lista.
+
+    Raises:
+        FileNotFoundError: se il percorso non identifica un file.
+        DataValidationError: se il TSV non è leggibile o non rispetta il
+            contratto delle cisterne.
     """
     # La validazione avviene sulla stringa originale, prima dello split dei vitigni.
     df = _read_tsv(path, "Tank information")
@@ -83,6 +93,9 @@ def write_output(df: pl.DataFrame, path: str) -> None:
     Args:
         df: il DataFrame finale (trasformazioni + HPC applicate) da salvare.
         path: percorso del file di output.
+
+    Raises:
+        OSError: se il file di output non può essere scritto.
     """
     # Mantiene un messaggio uniforme in caso di percorso di output non scrivibile.
     try:
