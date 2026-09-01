@@ -43,3 +43,37 @@ def test_winery_pipeline_end_to_end(tmp_path, monkey_joblib, monkey_wandb_run, s
 
     parallel_mock.assert_called()
     delayed_mock.assert_called()
+
+
+@pytest.mark.slow
+def test_winery_pipeline_without_tank_info(tmp_path, monkey_joblib, monkey_wandb_run, sensors_df):
+    """Verify that the pipeline works even if no tank_info is provided"""
+
+    sensor_csv = tmp_path / "sensors.csv"
+    sensor_csv.write_text(sensors_df.write_csv(separator="\t"))
+
+    output_csv = tmp_path / "results.csv"
+
+    run_full_pipeline(
+        input_csv=str(sensor_csv),
+        tank_info_csv=None,
+        output_csv=str(output_csv),
+        project_name="AcceptanceTestNoTankInfo",
+    )
+    # Anche senza tank_info, il logging su wandb deve comunque avvenire
+    assert any("stress_score" in d for d in monkey_wandb_run.logs)
+
+    df_result = pl.read_csv(output_csv)
+    for col in ["avg_pH_per_tank", "stress_score"]:
+        assert col in df_result.columns, f"Missing {col} in final output"
+
+    # Senza tank_info non esiste il conteggio per varietà d'uva
+    assert "grape_variety_num_readings" not in df_result.columns
+
+    # Senza tank_info non c'è nessun join:le righe restano quelle originali
+    assert df_result.shape[0] == 3
+
+    parallel_mock, delayed_mock = monkey_joblib
+
+    parallel_mock.assert_called()
+    delayed_mock.assert_called()
