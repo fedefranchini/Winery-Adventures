@@ -1,6 +1,6 @@
 # WA-02 — Matrice requisiti-test e contratti dati
 
-In questo documento si derivano i requisiti funzionali dai test presenti in `tests/`. Per ogni
+Si derivano i requisiti funzionali dai test presenti in `tests/`. Per ogni
 requisito è indicata l'origine (il test che lo richiede) e gli eventuali edge
 case (null, colonne opzionali, input assenti, errori attesi).
 
@@ -30,10 +30,8 @@ case (null, colonne opzionali, input assenti, errori attesi).
 
 | ID | Requisito | Componente | Test di origine | Edge case |
 |---|---|---|---|---|
-| REQ-11 | `pairwise_stress_function` deve essere compilata con Numba (JIT), non una funzione Python pura. | HPC | `test_is_function_numba` | — |
-| REQ-12 | `WineryHPCComputations.analyze_data` raggruppa le letture per `tank_id`, calcola un unico valore di stress per cisterna con `pairwise_stress_function` (su `pH`, `temp`, `quantity_liters` di quella cisterna) e lo assegna a `stress_score` su ogni riga della cisterna (stesso pattern di propagazione di REQ-05). | WineryHPCComputations | `test_hpc_computations_class` | — |
-
-> **Nota aperta:** la formula esatta di `pairwise_stress_function` non è determinabile con certezza da un solo esempio numerico (2 elementi → 2.2). È probabile un confronto a coppie ("pairwise", complessità O(n²)), ma va confermata con chi implementerà WA-11. Inoltre il comportamento con **input vuoto** è citato come requisito in `docs/development-phases.md` (WA-11) ma **nessun test attuale lo verifica**.
+| REQ-11 | `pairwise_stress_function` deve essere compilata con Numba. | HPC | `test_is_function_numba` | — |
+| REQ-12 | `WineryHPCComputations.analyze_data` raggruppa le letture per `tank_id`, calcola un unico valore di stress per cisterna con `pairwise_stress_function` e lo assegna a `stress_score` su ogni riga della cisterna. Formula: per ogni coppia (i,j) di letture, `(|pH_i - pH_j| + |temp_i - temp_j|·2) · (500/qty_i + 500/qty_j)`, sommato su tutte le coppie e diviso per n². Se n=0, restituisce 0.0. | WineryHPCComputations | `test_hpc_computations_class` | — |
 
 ### 1.4 `tests/unit/test_pipeline.py`
 
@@ -52,13 +50,9 @@ case (null, colonne opzionali, input assenti, errori attesi).
 | REQ-18 | Se `tank_info` è fornito, l'output finale è espanso per varietà (nel caso di esempio: 9 righe); deve contenere sia le colonne di trasformazione (`avg_pH_per_tank`) sia quelle HPC (`stress_score`). | run_full_pipeline | `test_winery_pipeline_end_to_end` | — |
 | REQ-19 | `run_full_pipeline` deve usare effettivamente Joblib (`Parallel`/`delayed`) per almeno una parte del lavoro. | run_full_pipeline | `test_winery_pipeline_end_to_end` | — |
 
-> **Gap di copertura:** `tank_info_csv` sembra un parametro opzionale (coerente con `WineryTransformer(None)` a livello unitario), ma nessun test di accettazione attuale esercita il flusso end-to-end senza `tank_info`.
->
-> **Ambiguità sui contratti dati:** nei test unitari `WineryTransformer` riceve `tank_info` con `grape_variety` già **splittata in lista** (fixture `tank_info_df_grape_variety_split`), mentre nel test di accettazione il TSV contiene `grape_variety` come **stringa unica separata da virgole** (fixture `tank_info_df`). Non è chiaro dai test chi debba fare lo split (I/O in `run_full_pipeline`/WA-07, o il costruttore di `WineryTransformer`) — da chiarire con MarrasFederico prima di WA-07/WA-09.
-
 ## 2. Contratti dati
 
-### 2.1 `sensors_*.tsv` (file obbligatorio)
+### 2.1 `sensors_*.tsv`
 
 | Colonna | Tipo | Obbligatoria (colonna) | Null ammesso (valore) |
 |---|---|---|---|
@@ -68,17 +62,10 @@ case (null, colonne opzionali, input assenti, errori attesi).
 | `temp` | float | sì | no |
 | `quantity_liters` | int | **no** (la colonna può mancare del tutto) | **sì**, anche se la colonna è presente |
 
-### 2.2 `tank_info_*.tsv` (file opzionale — join facoltativo)
+### 2.2 `tank_info_*.tsv`
 
 | Colonna | Tipo | Obbligatoria (colonna) | Null ammesso (valore) |
 |---|---|---|---|
 | `tank_id` | int | sì | no |
 | `grape_variety` | string, valori multipli separati da virgola (es. `"CannonauVellutato,BovaleBarricato"`) | sì | no |
 | `capacity_liters` | int | sì | no |
-
-## 3. Rischi e domande aperte
-
-- Formula esatta di `pairwise_stress_function` non pienamente determinabile dai soli test (REQ-11/12).
-- Comportamento di `pairwise_stress_function`/HPC con input vuoto non testato, pur citato come obiettivo in `docs/development-phases.md`.
-- Nessun test end-to-end senza `tank_info_csv` (REQ-17/18).
-- Non è chiaro chi debba splittare `grape_variety` da stringa a lista (I/O vs `WineryTransformer`).
