@@ -1,27 +1,36 @@
-# Configurazione dell'ambiente di sviluppo
+# Development environment setup
 
-Il presente documento descrive i requisiti e la procedura per predisporre un
-ambiente locale riproducibile per lo sviluppo, l'esecuzione e la verifica di
-Winery Adventures.
+This document describes how to set up a local environment to develop, run,
+and verify Winery Adventures.
 
-## Prerequisiti
+## Prerequisites
 
-- Python 3.10 o successivo;
-- Git, se il codice sorgente viene acquisito tramite clonazione del repository.
+- Python 3.10 or later;
+- Git to acquire and version the source code.
 
-La versione installata di Python può essere verificata con il comando:
+The requirement declared by the package is Python 3.10 or later; the
+continuous integration pipeline explicitly checks Python 3.10. Check the
+available version with:
 
 ```bash
 python --version
 ```
 
-Una versione precedente alla 3.10 non è supportata.
+## Acquiring the repository
 
-## Creazione dell'ambiente virtuale
+Clone the repository and move into its root:
 
-Dalla radice del repository:
+```bash
+git clone https://github.com/fedefranchini/Winery-Adventures.git
+cd Winery-Adventures
+```
+
+All the following commands assume this working directory.
+
+## Creating the virtual environment
 
 **macOS / Linux:**
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -29,106 +38,216 @@ python -m pip install --upgrade pip
 ```
 
 **Windows (PowerShell):**
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 ```
 
-La directory `.venv` contiene file specifici dell'ambiente locale e non deve
-essere inclusa nel controllo versione. Deve pertanto essere ricreata in ogni
-nuova installazione.
-
-Per uscire dall'ambiente (comando identico su tutti i sistemi):
+The `.venv` directory contains files specific to the local installation
+and must not be versioned. To leave the virtual environment:
 
 ```bash
 deactivate
 ```
 
-## Installazione del progetto
+## Installing the project
 
-Installare package, dipendenze runtime e strumenti di sviluppo in modalità
-editable:
+Install the package, the runtime dependencies, and the development tools
+in editable mode:
 
 ```bash
 python -m pip install -e ".[dev]"
 ```
 
-La modalità editable rende immediatamente importabili le modifiche locali senza
-reinstallare il package dopo ogni cambiamento.
-
-Verificare l'installazione:
+In this mode, changes to the source become immediately importable without
+reinstalling the package. Then check the environment and dependencies:
 
 ```bash
-python -c "import joblib, numba, numpy, polars, tqdm, wandb"
+python -c "import joblib, numba, numpy, polars, sphinx, myst_parser, tqdm, wandb"
 python -c "import winery_adventures"
 python -m pip check
 ```
 
-## Strumenti di qualità
+The Polars minimum is `1.44.1`, the version verified with the explicit
+`empty_as_null` option of `explode`; compatibility with `1.0` is not
+declared. The W&B minimum is `0.19.10`, which supports
+`reinit="finish_previous"` in place of the deprecated boolean. The bounds
+are defined in `pyproject.toml`: after changing them, the editable
+installation must be repeated, not just the environment reactivated.
 
-Controllare la formattazione senza modificare i file:
+## Configuring Weights & Biases
+
+To log runs online, authenticate the environment with:
 
 ```bash
-black --check .
+wandb login
 ```
 
-Eseguire il linter:
-
-```bash
-ruff check .
-```
-
-Applicare la formattazione e le correzioni automatiche ai file sorgente
-interessati dalla modifica:
+For local checks without authentication, offline mode can be used instead.
 
 **macOS / Linux:**
+
 ```bash
-black percorso/del/file.py
-ruff check --fix percorso/del/file.py
+export WANDB_MODE=offline
 ```
 
 **Windows (PowerShell):**
+
 ```powershell
-black percorso\del\file.py
-ruff check --fix percorso\del\file.py
+$env:WANDB_MODE="offline"
 ```
 
-I test di riferimento distribuiti con il progetto non devono essere riscritti
-automaticamente. Qualsiasi loro modifica deve essere esplicita e motivata.
+Instructions for running the pipeline are provided in the
+[usage guide](usage-guide.md).
 
-## Test
+## Quality checks
 
-La suite completa viene eseguita con:
+Run the linter and check formatting without modifying the files:
+
+```bash
+ruff check .
+black --check .
+```
+
+During development, automatic fixes must be limited to the files affected
+by the task:
+
+**macOS / Linux:**
+
+```bash
+ruff check --fix path/to/file.py
+black path/to/file.py
+```
+
+**Windows (PowerShell):**
+
+```powershell
+ruff check --fix path\to\file.py
+black path\to\file.py
+```
+
+The reference tests distributed with the project must not be rewritten
+automatically. Any change to them must be explicit and justified.
+
+## Tests and coverage
+
+Run the entire suite with:
 
 ```bash
 pytest
 ```
 
-Per escludere il test end-to-end marcato come lento:
+To exclude the end-to-end tests marked as slow:
 
 ```bash
 pytest -m "not slow"
 ```
 
-Per produrre la copertura:
+To produce the coverage report for the application package and the
+generator, using the same sources and the 90% threshold configured for the
+CI:
 
 ```bash
-pytest --cov=winery_adventures --cov-report=term-missing
+pytest --cov --cov-report=term-missing
 ```
 
-## Dataset grandi
+The `.coverage` file produced by the command is a local artifact and is
+not part of the source.
 
-Il repository include i dataset ridotti `data/sensors_sample.tsv` e
-`data/tank_info_sample.tsv`, destinati agli esempi e alle verifiche rapide. I
-dataset completi possono essere generati localmente con:
+## Sphinx documentation
+
+The documentation includes the Markdown guides and the API reference
+derived from the docstrings. Generate it in strict mode, treating warnings
+as errors:
+
+```bash
+sphinx-build -W --keep-going -b html docs docs/_build/html
+```
+
+At the end, the starting page is at `docs/_build/html/index.html`.
+
+## Generated datasets
+
+The repository includes the reduced datasets `data/sensors_sample.tsv` and
+`data/tank_info_sample.tsv`, intended for examples and quick checks. To
+generate larger datasets locally:
 
 ```bash
 python data_generator.py --seed 42 --num-tanks 100 --num-readings 100000
 ```
 
-Il generatore è configurabile (`--seed`, `--num-tanks`, `--num-readings`,
-`--start-date`) e produce output riproducibile a parità di seed. Genera
-`data/full_sensors.tsv` e `data/full_tank_info.tsv`: questi file non fanno
-parte dei dataset distribuiti nel repository, possono essere rigenerati e
-possono raggiungere dimensioni significative.
+The available options are `--seed`, `--num-tanks`, `--num-readings`, and
+`--start-date`. With the same parameters and seed, the same data is
+produced in the `data/full_sensors.tsv` and `data/full_tank_info.tsv`
+files. These artifacts are regenerable, can be large, and are not part of
+the distributed datasets.
+
+## Benchmark
+
+A quick check of the benchmark can be run with:
+
+```bash
+python -m benchmarks.benchmark_pipeline --tanks 10 --readings 1000 --repetitions 2 --seed 42 --output benchmark-results.json
+```
+
+For the measurement expected on 100,000 readings:
+
+```bash
+python -m benchmarks.benchmark_pipeline --tanks 100 --readings 100000 --repetitions 3 --seed 42 --output benchmark-results.json
+```
+
+The JSON file contains the environment, parameters, input fingerprints,
+measurements of the individual iterations, and a per-phase summary. The
+first run may take longer because the dataset is regenerated from scratch.
+
+Methodology, collected measurements, and a controlled comparison between
+serial and parallel compilation of the current formula are reported in the
+[benchmark report](benchmark-report.md).
+
+## Local verification sequence
+
+Before proposing a Pull Request, run from the root:
+
+```bash
+python -m pip check
+ruff check .
+black --check .
+pytest --cov --cov-report=term-missing
+sphinx-build -W --keep-going -b html docs docs/_build/html
+```
+
+## Troubleshooting
+
+### PowerShell activation blocked
+
+If the local policy prevents running `Activate.ps1`, enable it for the
+current process only and repeat the activation:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+### Dependencies or imports unavailable
+
+Check that `.venv` is activated, repeat
+`python -m pip install -e ".[dev]"`, and run `python -m pip check`.
+
+### W&B authentication requested
+
+Run `wandb login` for online mode, or set
+`WANDB_MODE=offline` before starting the pipeline or the manual tests.
+
+### Sphinx build not clean
+
+Remove any previous `docs/_build` directory, rerun the command in strict
+mode, and fix every reported reference or docstring.
+
+### Slower initial benchmark
+
+Numba's JIT compilation introduces a cost on the first call. The runner
+performs a warm-up on both signatures used in practice, so compilation
+stays outside the measured windows; overall startup still takes longer
+because of dataset generation.

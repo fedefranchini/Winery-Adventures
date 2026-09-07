@@ -1,37 +1,36 @@
-# Architettura e UML
+# Architecture and UML
 
-Descrizione dei diagrammi UML che rappresentano la struttura e il
-comportamento di Winery Adventures: diagramma delle classi, diagramma di
-sequenza e diagramma dei casi d'uso.
+Description of the UML diagrams representing the structure and behavior of
+Winery Adventures: class diagram, sequence diagram, and use case diagram.
 
-## Diagramma delle classi
+## Class diagram
 
-![Diagramma delle classi](diagrams/class-diagram.png)
+![Class diagram](diagrams/class-diagram.png)
 
-`BaseWineryAnalyzer` è la classe astratta che definisce il contratto comune
-(`analyze_data`), implementato da `WineryTransformer` e
-`WineryHPCComputations`. `WineryPipeline` compone una lista di analyzer ed
-espone `run`/`log_to_wandb` per orchestrare l'esecuzione e il logging.
-`pairwise_stress_function` e `run_full_pipeline` sono funzioni libere, non
-classi: `pairwise_stress_function` è usata da `WineryHPCComputations` (relazione di
-dipendenza), `run_full_pipeline` orchestra l'intero flusso creando ed eseguendo gli
-altri componenti.
+`BaseWineryAnalyzer` is the abstract class that defines the common contract
+(`analyze_data`), implemented by `WineryTransformer` and
+`WineryHPCComputations`. `WineryPipeline` composes a list of analyzers and
+exposes `run`/`log_to_wandb` to orchestrate execution and logging.
+`pairwise_stress_function` and `run_full_pipeline` are free functions, not
+classes: `pairwise_stress_function` is used by `WineryHPCComputations` (a
+dependency relationship), `run_full_pipeline` orchestrates the entire flow by
+creating and running the other components.
 
-## Diagramma di sequenza
+## Sequence diagram
 
-![Diagramma di sequenza](diagrams/sequence-diagram.png)
+![Sequence diagram](diagrams/sequence-diagram.png)
 
-Il diagramma mostra il flusso di `run_full_pipeline`: lettura dei
-file sensori e cisterne (in parallelo, tramite Joblib), creazione degli
-analyzer e della pipeline, esecuzione delle trasformazioni e del calcolo HPC
-(chiamate annidate all'interno di `WineryPipeline.run`), logging su wandb e
-scrittura del risultato finale.
+The diagram shows the flow of `run_full_pipeline`: reading the
+sensor and tank files (in parallel, via Joblib), creating the
+analyzers and the pipeline, running the transformations and the HPC
+computation (nested calls inside `WineryPipeline.run`), logging to wandb —
+only if `project_name` is set — and writing the final result.
 
-## Diagramma dei casi d'uso
+## Use case diagram
 
-![Diagramma dei casi d'uso](diagrams/use-case-diagram.png)
+![Use case diagram](diagrams/use-case-diagram.png)
 
-L'attore **Analista Dati** può eseguire la pipeline di analisi (caso d'uso
-principale) ed eventualmente includere i dati delle cisterne come estensione opzionale.
-Indipendentemente, può anche generare dataset di prova tramite il generatore
-dati.
+The **Data Analyst** actor can run the analysis pipeline (the main use
+case) and optionally include the tank data as an optional extension.
+Independently, they can also generate test datasets through the data
+generator.

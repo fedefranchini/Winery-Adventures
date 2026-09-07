@@ -1,175 +1,149 @@
-# Winery-Adventures
+# Winery Adventures
 
-A data science pipeline for ingesting, transforming and analyzing wine fermentation sensor 
-data.
+Winery Adventures is a data analysis pipeline for ingesting, validating,
+and processing readings from wine fermentation tanks.
 
----da
+## Main features
 
-## Struttura del repository
+- reading and validating TSV datasets for sensors and tanks;
+- transformations and aggregations by tank and grape variety;
+- parallel computation of a stress index using Numba;
+- concurrent input loading with Joblib;
+- logging results to Weights & Biases (W&B);
+- unit and acceptance tests, Sphinx documentation, and a reproducible
+  benchmark.
 
-Cartelle principali del progetto:
+## Installation
 
-```
-Winery-Adventures/
-├── winery_adventures/       # package applicativo
-│   ├── base.py               # BaseWineryAnalyzer (classe astratta)
-│   ├── transformations.py    # WineryTransformer (pH medio, conteggi, deviazione termica)
-│   ├── computations.py       # WineryHPCComputations (stress pairwise, Numba)
-│   ├── pipeline.py           # WineryPipeline (orchestrazione + logging wandb)
-│   ├── io.py                 # lettura/scrittura TSV, validazione
-│   ├── validation.py         # contratti dati e controlli di schema
-│   └── main.py                # run_full_pipeline (punto di ingresso end-to-end)
-├── benchmarks/               # benchmark riproducibile di tempo/memoria
-├── tests/                    # test unitari (unit/) e end-to-end (acceptance/)
-├── data/                     # dataset di esempio
-├── data_generator.py         # generatore di dataset riproducibili e configurabili
-└── docs/                     # documentazione di progetto
+The project requires Python 3.10 or later. After creating and activating a
+virtual environment, install the package and development tools from the
+repository root:
+
+```bash
+python -m pip install -e ".[dev]"
 ```
 
-## Architettura e UML
+The complete procedure for macOS, Linux, and Windows is available in the
+[setup guide](docs/development-setup.md).
 
-Diagramma delle classi, di sequenza e dei casi d'uso del sistema sono
-descritti in [`docs/architecture.md`](docs/architecture.md).
+## Quick start
 
----
-
-### Moduli principali (`winery_adventures/`)
-
----
-
-#### `base.py`
-
-Definisce `BaseWineryAnalyzer`, la classe astratta che stabilisce il
-contratto comune (`analyze_data`) a cui si conformano tutti gli analyzer del
-progetto.
-
----
-
-#### `transformations.py`
-
-Implementa `WineryTransformer`: calcola il pH medio e il numero di letture
-per cisterna, il conteggio delle letture per varietà d'uva (tramite join con
-`tank_info`), e la deviazione dalla temperatura standard.
-
----
-
-#### `computations.py`
-
-Implementa `WineryHPCComputations` e `pairwise_stress_function`, che calcola
-un indice di stress da fermentazione confrontando ogni coppia di letture di
-una cisterna. La funzione è compilata con Numba e parallelizzata (`prange`)
-per le prestazioni.
-
----
-
-#### `pipeline.py`
-
-Implementa `WineryPipeline`, che esegue in sequenza una lista di analyzer e
-gestisce il logging opzionale del risultato su Weights & Biases.
-
----
-
-#### `io.py`
-
-Funzioni per leggere i file TSV di input (sensori e cisterne, con validazione
-dello schema) e per scrivere il file di output finale.
-
----
-
-#### `validation.py`
-
-Controlli sui contratti dati (colonne obbligatorie, tipi, valori nulli o
-fuori range ammessi) applicati durante la lettura dei file.
-
----
-
-#### `main.py`
-
-Contiene `run_full_pipeline`, il punto di ingresso end-to-end: orchestra
-lettura (in parallelo con Joblib), trasformazioni, calcolo HPC, logging e
-scrittura dell'output.
-
----
-
-### Test (`tests/`)
-
----
-
-#### `unit/`
-
-Un file di test per ciascun modulo sopra, inclusi i casi limite (input
-vuoti, valori nulli, schemi non validi).
-
----
-
-#### `acceptance/`
-
-Test end-to-end che verificano l'intero flusso tramite `run_full_pipeline`,
-sia con sia senza il file opzionale `tank_info`.
-
----
-
-### Benchmark (`benchmarks/`)
-
----
-
-#### `benchmark_pipeline.py`
-
-Misura tempo di esecuzione e memoria delle fasi principali della pipeline
-(I/O, trasformazioni, HPC, output) su un dataset generato in modo
-riproducibile.
-
-## Installazione e sviluppo
-
-Il progetto richiede Python 3.10+ e si installa in un ambiente virtuale in
-modalità editable (`pip install -e ".[dev]"`), con `black`/`ruff` per stile e
-lint e `pytest` per i test. La procedura completa, i comandi per macOS/Linux e
-Windows, e come generare dataset di grandi dimensioni sono descritti in
-[`docs/development-setup.md`](docs/development-setup.md).
-
-## Utilizzo
-
-`run_full_pipeline` (in `winery_adventures/main.py`) è il punto di ingresso
-end-to-end della pipeline: legge i file di input, applica le trasformazioni
-e il calcolo HPC, e scrive il risultato su file.
+The `run_full_pipeline` function executes the entire workflow and saves the
+result to a CSV file. The following example uses the sample datasets
+included in the repository:
 
 ```python
 from winery_adventures.main import run_full_pipeline
 
 run_full_pipeline(
     input_csv="data/sensors_sample.tsv",
-    tank_info_csv="data/tank_info_sample.tsv",  # opzionale
+    tank_info_csv="data/tank_info_sample.tsv",
     output_csv="data/results.csv",
     project_name="WineryAdventures",
 )
 ```
 
-- **`input_csv`** *(obbligatorio)*: percorso del file TSV con le rilevazioni dei sensori (pH, temperatura, quantità)
-- **`tank_info_csv`** *(opzionale, default `None`)*: percorso del file TSV con le informazioni sulle cisterne (varietà d'uva, capacità). Se omesso, la pipeline funziona comunque, semplicemente senza calcolare le colonne che dipendono da questi dati (es. conteggio letture per varietà)
-- **`output_csv`**: percorso dove viene scritto il file con i risultati
-- **`project_name`**: nome del progetto usato per il logging su Weights & Biases
+The available parameters are:
 
-Per la descrizione completa delle colonne prodotte in output, altri esempi
-d'uso, e la risoluzione dei problemi più comuni, vedi
-[`docs/usage-guide.md`](docs/usage-guide.md).
+- `input_csv`: required path to the TSV containing sensor readings;
+- `tank_info_csv`: optional path to the TSV containing tank information;
+  the default value is `None`;
+- `output_csv`: CSV destination, defaulting to `output.csv`;
+- `project_name`: optional W&B project name.
+
+The sensor column `quantity_liters` is optional and may contain null values.
+Each tank's stress is computed using only readings with a present, positive
+quantity, then propagated to all rows belonging to that tank. If no usable
+readings exist, `stress_score` is `0.0`, indicating that no pairs can be
+computed.
+
+W&B logging runs only when `project_name` is provided, as in the example
+above; when it is omitted, the pipeline only writes the CSV. For a local run
+without authentication, set `WANDB_MODE=offline`. Complete examples, data
+contracts, and troubleshooting instructions are provided in the
+[user guide](docs/usage-guide.md).
+
+## Repository structure
+
+```text
+Winery-Adventures/
+├── winery_adventures/       # application package
+│   ├── base.py               # abstract analyzer contract
+│   ├── transformations.py    # transformations and aggregations
+│   ├── computations.py       # HPC stress computation
+│   ├── pipeline.py           # orchestration and W&B logging
+│   ├── io.py                 # TSV reading and CSV writing
+│   ├── validation.py         # data contract validation
+│   └── main.py               # end-to-end entry point
+├── benchmarks/               # time and memory benchmarks
+├── tests/                    # unit and acceptance tests
+├── data/                     # sample datasets
+├── data_generator.py         # configurable dataset generator
+└── docs/                     # project documentation
+    └── diagrams/             # Draw.io source and UML exports
+```
+
+## Components
+
+- `BaseWineryAnalyzer` defines the common `analyze_data` contract.
+- `WineryTransformer` computes aggregations by tank and grape variety, and
+  deviations from the standard temperature.
+- `WineryHPCComputations` computes and assigns fermentation stress.
+- `WineryPipeline` runs analyzers sequentially and handles W&B logging.
+- The `io` module reads TSV inputs, initiates their validation, and writes
+  CSV output.
+- `run_full_pipeline` coordinates concurrent reading, transformations,
+  computation, logging, and writing.
+
+The class, sequence, and use case diagrams are described in the
+[architecture documentation](docs/architecture.md).
+
+## Verification
+
+After installing the development dependencies, run:
+
+```bash
+ruff check .
+black --check .
+pytest --cov --cov-report=term-missing
+sphinx-build -W --keep-going -b html docs docs/_build/html
+```
+
+The benchmark can be started with:
+
+```bash
+python -m benchmarks.benchmark_pipeline --tanks 10 --readings 1000 --repetitions 2 --seed 42
+```
+
+## Documentation
+
+- [User guide](docs/usage-guide.md)
+- [Environment setup](docs/development-setup.md)
+- [Requirements-test matrix and data contracts](docs/requirements-tests-matrix.md)
+- [Architecture](docs/architecture.md)
+- [Benchmark and optimization report](docs/benchmark-report.md)
+- [Project management](docs/project-management.md)
+- [Development phases](docs/development-phases.md)
 
 ## Project Management
 
-Lo sviluppo è organizzato con metodologia **Kanban** tramite il
-GitHub Project **Winery Adventures — Development**. Le attività della WBS sono
-rappresentate esclusivamente da draft card `WA-01`–`WA-22`; non vengono usate
-GitHub Issues come unità di lavoro.
+Development follows the Kanban methodology in the GitHub Project
+[Winery Adventures — Development](https://github.com/users/fedefranchini/projects/3).
+WBS activities are represented by draft cards `WA-01`–`WA-22`; GitHub Issues
+are not used as work items.
 
-- [Winery Adventures — Development](https://github.com/users/fedefranchini/projects/3)
-- [Pull Request del repository](https://github.com/fedefranchini/Winery-Adventures/pulls)
-- Workflow: `Ready` → `In Progress` → `Review / Testing` → `Done`
-- WIP limit: massimo un task principale `In Progress` per ciascun componente
-- Branch: `feature/WA-XX-descrizione`, `fix/WA-XX-descrizione` oppure
-  `docs/WA-XX-descrizione`
-- Pull Request: titolo `WA-XX — descrizione`, test superati e peer review
-  dell'altro componente prima del merge
+- Workflow: `Ready` → `In Progress` → `Review / Testing` → `Done`.
+- WIP limit: at most one main task `In Progress` per team member.
+- Branches: `feature/WA-XX-description`, `fix/WA-XX-description`, or
+  `docs/WA-XX-description`.
+- Pull Requests: title `WA-XX — description`, passing tests, and reciprocal
+  peer review before merging.
 
-La WBS, le regole operative e la Definition of Done sono descritte in
-[`docs/project-management.md`](docs/project-management.md).
-Le attività da svolgere in ciascuna fase sono illustrate in
-[`docs/development-phases.md`](docs/development-phases.md).
+The WBS and Definition of Done are described in the
+[project management document](docs/project-management.md). Pull Requests
+are available in the repository's
+[Pull Requests section](https://github.com/fedefranchini/Winery-Adventures/pulls).
+
+## License
+
+The project is distributed under the terms specified in [LICENSE](LICENSE).

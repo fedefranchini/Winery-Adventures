@@ -1,219 +1,223 @@
-# Fasi di sviluppo
+# Development phases
 
-Questo documento descrive come svolgere il progetto Winery Adventures, dalla
-preparazione iniziale alla verifica finale. Le fasi indicano un ordine logico,
-ma il lavoro è gestito con Kanban: una nuova attività può iniziare soltanto
-quando le sue dipendenze sono concluse e la card si trova in `Ready`.
+This document describes how to carry out the Winery Adventures project,
+from initial preparation to final verification. The phases indicate a
+logical order, but the work is managed with Kanban: a new activity can
+start only when its dependencies are complete and the card is in `Ready`.
 
-## Regole valide in tutte le fasi
+## Rules valid in every phase
 
-Per ogni attività si deve:
+For every activity, you must:
 
-1. verificare che le dipendenze indicate nella card siano concluse;
-2. spostare la card da `Ready` a `In Progress`;
-3. rispettare il limite di un solo task principale `In Progress` per persona;
-4. creare una branch `feature/WA-XX-descrizione`,
-   `fix/WA-XX-descrizione` o `docs/WA-XX-descrizione`;
-5. limitare commit e modifiche allo scope della card e usare `WA-XX` nei commit;
-6. eseguire i test e i controlli richiesti dalla card;
-7. aprire una Pull Request `WA-XX — descrizione` e aggiungerla al Project;
-8. spostare la card in `Review / Testing` e richiedere la peer review;
-9. correggere le osservazioni emerse durante la review;
-10. spostare la card in `Done` soltanto dopo test, approvazione e merge.
+1. check that the dependencies indicated on the card are complete;
+2. move the card from `Ready` to `In Progress`;
+3. respect the limit of a single main task `In Progress` per person;
+4. create a `feature/WA-XX-description`,
+   `fix/WA-XX-description`, or `docs/WA-XX-description` branch;
+5. limit commits and changes to the card's scope and use `WA-XX` in commits;
+6. run the tests and checks required by the card;
+7. open a `WA-XX — description` Pull Request and add it to the Project;
+8. move the card to `Review / Testing` and request the peer review;
+9. address the observations raised during the review;
+10. move the card to `Done` only after tests, approval, and merge.
 
-## Fase 1 — Avvio e definizione dei requisiti
+## Phase 1 — Kickoff and requirements definition
 
-### Obiettivo
+### Objective
 
-Preparare il processo di lavoro e trasformare README e test forniti in
-requisiti chiari e verificabili. Questa fase riduce il rischio di implementare
-comportamenti diversi da quelli richiesti.
+Prepare the work process and turn the provided README and tests into
+clear, verifiable requirements. This phase reduces the risk of
+implementing behaviors different from those required.
 
-### Attività
+### Activities
 
-- **WA-01 — Project management:** configurare il Project Kanban, i campi, gli
-  stati, la WBS, il workflow, il WIP limit e la documentazione organizzativa.
-- **WA-02 — Requisiti e test:** creare una matrice che colleghi ogni requisito
-  alla sua origine e ai test che lo verificano. Definire inoltre schemi dati,
-  gestione dei null, input opzionali ed errori attesi.
-- **WA-04 — Toolchain:** predisporre package Python, dipendenze riproducibili,
-  Pytest, formatter e linter.
+- **WA-01 — Project management:** set up the Kanban Project, the fields,
+  the states, the WBS, the workflow, the WIP limit, and the organizational
+  documentation.
+- **WA-02 — Requirements and tests:** create a matrix linking every
+  requirement to its origin and to the tests that verify it. Also define
+  data schemas, null handling, optional inputs, and expected errors.
+- **WA-04 — Toolchain:** set up the Python package, reproducible
+  dependencies, Pytest, formatter, and linter.
 
-### Cosa si deve produrre
+### What must be produced
 
-- Project pubblico e collegato al repository;
-- requisiti funzionali e non funzionali tracciabili;
-- descrizione degli schemi TSV di input e output;
-- ambiente di sviluppo installabile in modo riproducibile;
-- comandi documentati per lint, formattazione e test.
+- a public Project linked to the repository;
+- traceable functional and non-functional requirements;
+- a description of the input TSV and output CSV schemas;
+- a development environment that can be installed reproducibly;
+- documented commands for lint, formatting, and tests.
 
-### Criteri di uscita
+### Exit criteria
 
-La fase è conclusa quando entrambi gli studenti possono installare l'ambiente,
-comprendono i risultati attesi e possono raccogliere i test senza errori di
-configurazione.
+The phase is complete when both students can install the environment,
+understand the expected results, and can collect the tests without
+configuration errors.
 
-## Fase 2 — Progettazione e fondazioni
+## Phase 2 — Design and foundations
 
-### Obiettivo
+### Objective
 
-Definire l'architettura prima dell'implementazione e costruire i componenti di
-base dai quali dipende il resto del sistema.
+Define the architecture before implementation and build the base
+components the rest of the system depends on.
 
-### Attività
+### Activities
 
-- **WA-03 — Architettura e UML:** definire responsabilità, relazioni ed
-  ereditarietà attraverso diagrammi di classi, sequenza e casi d'uso.
-- **WA-05 — Continuous Integration:** configurare controlli automatici di lint
-  e test sulle Pull Request.
-- **WA-06 — BaseWineryAnalyzer:** implementare la classe astratta e il contratto
-  comune `analyze_data`.
-- **WA-07 — I/O:** implementare lettura TSV, validazione iniziale, join opzionale
-  delle informazioni sulle cisterne e scrittura dell'output.
+- **WA-03 — Architecture and UML:** define responsibilities, relationships,
+  and inheritance through class, sequence, and use case diagrams.
+- **WA-05 — Continuous Integration:** set up automated lint and test
+  checks on Pull Requests.
+- **WA-06 — BaseWineryAnalyzer:** implement the abstract class and the
+  common `analyze_data` contract.
+- **WA-07 — I/O:** implement TSV reading, initial validation, the optional
+  join with tank information, and output writing.
 
-### Cosa si deve fare
+### What must be done
 
-1. Stabilire quali classi possiedono ciascuna responsabilità.
-2. Definire il flusso dal caricamento dei file fino all'output finale.
-3. Evitare dipendenze circolari e duplicazioni tra componenti.
-4. Implementare prima le interfacce e i contratti condivisi.
-5. Verificare I/O sia con `tank_info` sia senza il file opzionale.
-6. Rendere obbligatori i controlli CI nelle normali Pull Request.
+1. Establish which classes own each responsibility.
+2. Define the flow from file loading to the final output.
+3. Avoid circular dependencies and duplication between components.
+4. Implement the shared interfaces and contracts first.
+5. Verify I/O both with `tank_info` and without the optional file.
+6. Make CI checks mandatory on regular Pull Requests.
 
-### Criteri di uscita
+### Exit criteria
 
-UML e codice di base devono essere coerenti; la classe astratta deve superare i
-test dedicati; lettura e scrittura devono funzionare su file temporanei validi;
-la CI deve eseguire correttamente i controlli configurati.
+UML and the base code must be consistent; the abstract class must pass the
+dedicated tests; reading and writing must work on valid temporary files;
+CI must correctly run the configured checks.
 
-## Fase 3 — Implementazione delle funzionalità principali
+## Phase 3 — Implementing the core features
 
-### Obiettivo
+### Objective
 
-Realizzare le trasformazioni, il calcolo HPC e l'orchestrazione end-to-end
-richiesti dai test del progetto.
+Build the transformations, the HPC computation, and the end-to-end
+orchestration required by the project's tests.
 
-### Attività sulle trasformazioni
+### Transformation activities
 
-- **WA-08:** calcolare pH medio e numero di letture per cisterna.
-- **WA-09:** espandere le varietà associate a ogni cisterna e calcolare il
-  numero di letture per vitigno.
-- **WA-10:** calcolare la deviazione dalla temperatura standard di 26 °C e la
-  versione scalata su 1000 litri quando la quantità è disponibile.
+- **WA-08:** compute the average pH and the number of readings per tank.
+- **WA-09:** expand the varieties associated with each tank and compute
+  the number of readings per grape variety.
+- **WA-10:** compute the deviation from the standard temperature of 26 °C
+  and the version scaled to 1,000 liters when the quantity is available.
 
-Le trasformazioni devono preservare le colonne necessarie alle fasi successive,
-gestire i null secondo il contratto e produrre esattamente i nomi di colonna
-richiesti dai test.
+The transformations must preserve the columns needed by subsequent
+phases, handle nulls according to the contract, and produce exactly the
+column names required by the tests.
 
-### Attività di calcolo e integrazione
+### Computation and integration activities
 
-- **WA-11 — HPC:** implementare la formula pairwise O(n²), gestire l'input vuoto,
-  compilare realmente la funzione con Numba e aggiungere `stress_score`.
-- **WA-12 — Pipeline:** eseguire gli analyzer nella sequenza configurata e
-  integrare il logging Weights & Biases, attivabile e disattivabile.
-- **WA-13 — Flusso completo:** integrare I/O, trasformazioni, HPC, Joblib, wandb
-  e scrittura dell'output tramite `run_full_pipeline`.
+- **WA-11 — HPC:** implement the O(n²) pairwise formula, handle empty
+  input, actually compile the function with Numba, and add
+  `stress_score`.
+- **WA-12 — Pipeline:** run the analyzers in the configured sequence and
+  integrate Weights & Biases logging, which can be enabled and disabled.
+- **WA-13 — Full flow:** integrate I/O, transformations, HPC, Joblib,
+  wandb, and output writing through `run_full_pipeline`.
 
-### Cosa si deve verificare
+### What must be verified
 
-- risultati numerici degli esempi noti;
-- comportamento con quantità nulla o colonna quantità assente;
-- aggregazioni tra più cisterne e più vitigni;
-- compilazione Numba della funzione di stress;
-- chiamata effettiva di Joblib;
-- presenza di `avg_pH_per_tank` e `stress_score` nell'output;
-- produzione delle nove righe attese dal test di accettazione.
+- the numeric results of the known examples;
+- behavior with a null quantity or a missing quantity column;
+- aggregations across several tanks and several grape varieties;
+- Numba compilation of the stress function;
+- an actual Joblib call;
+- the presence of `avg_pH_per_tank` and `stress_score` in the output;
+- production of the nine rows expected by the acceptance test.
 
-### Criteri di uscita
+### Exit criteria
 
-Tutti i test unitari relativi a base, trasformazioni, computazioni e pipeline
-devono passare. Il flusso end-to-end deve generare un output valido a partire
-dai dataset di esempio.
+All unit tests for the base, transformations, computations, and pipeline
+must pass. The end-to-end flow must produce a valid output starting from
+the sample datasets.
 
-## Fase 4 — Robustezza, testing e performance
+## Phase 4 — Robustness, testing, and performance
 
-### Obiettivo
+### Objective
 
-Rendere il sistema affidabile su input reali e dimostrare che può gestire
-dataset di almeno 100.000 righe con prestazioni misurabili.
+Make the system reliable on real input and demonstrate that it can handle
+a dataset of at least 100,000 rows with measurable performance.
 
-### Attività
+### Activities
 
-- **WA-14 — Robustezza:** validare gli schemi, gestire file assenti o invalidi e
-  aggiungere logging applicativo comprensibile.
-- **WA-15 — Generatore dati:** rendere configurabili seed, numero di cisterne e
-  numero di letture, assicurando output riproducibili.
-- **WA-16 — Test ed edge case:** aggiungere test per input vuoti, null, schemi
-  errati e valori limite; misurare la copertura.
-- **WA-17 — Integrazione:** completare i test end-to-end verificando output,
-  Joblib e wandb senza dipendenze esterne instabili.
-- **WA-18 — Profiling:** misurare tempo e memoria con una metodologia
-  ripetibile e identificare i colli di bottiglia.
-- **WA-19 — Ottimizzazione:** intervenire soltanto sui problemi dimostrati dal
-  profiling e confrontare risultati prima e dopo.
+- **WA-14 — Robustness:** validate the schemas, handle missing or invalid
+  files, and add understandable application logging.
+- **WA-15 — Data generator:** make seed, number of tanks, and number of
+  readings configurable, ensuring reproducible output.
+- **WA-16 — Tests and edge cases:** add tests for empty input, nulls,
+  invalid schemas, and boundary values; measure coverage.
+- **WA-17 — Integration:** complete the end-to-end tests, verifying
+  output, Joblib, and wandb without unstable external dependencies.
+- **WA-18 — Profiling:** measure time and memory with a repeatable
+  methodology and identify the bottlenecks.
+- **WA-19 — Optimization:** address only the problems demonstrated by
+  profiling and compare results before and after.
 
-### Procedura per le performance
+### Performance procedure
 
-1. Generare un dataset riproducibile di almeno 100.000 righe.
-2. Registrare ambiente, parametri e versione del codice.
-3. Eseguire più misurazioni, non una singola esecuzione.
-4. Raccogliere tempo totale, tempo delle fasi critiche e memoria utilizzata.
-5. Conservare una baseline prima delle ottimizzazioni.
-6. Applicare una modifica alla volta e rieseguire test e benchmark.
-7. Documentare anche ottimizzazioni tentate che non producono benefici.
+1. Generate a reproducible dataset of at least 100,000 rows.
+2. Record the environment, parameters, and code version.
+3. Run several measurements, not a single execution.
+4. Collect total time, time of the critical phases, and memory used.
+5. Keep a baseline before the optimizations.
+6. Apply one change at a time and rerun the tests and benchmark.
+7. Document any attempted optimizations that do not produce benefits.
 
-### Criteri di uscita
+### Exit criteria
 
-La suite completa deve passare, gli errori devono essere comprensibili, il
-dataset grande deve essere gestito senza errori e il report deve mostrare dati
-riproducibili. Ogni ottimizzazione deve preservare la correttezza funzionale.
+The full suite must pass, errors must be understandable, the large
+dataset must be handled without errors, and the report must show
+reproducible data. Every optimization must preserve functional
+correctness.
 
-## Fase 5 — Documentazione, verifica e consegna
+## Phase 5 — Documentation, verification, and delivery
 
-### Obiettivo
+### Objective
 
-Rendere il progetto comprensibile, riproducibile e pronto per la valutazione e
-la dimostrazione finale.
+Make the project understandable, reproducible, and ready for evaluation
+and the final demo.
 
-### Attività
+### Activities
 
-- **WA-20 — Documentazione tecnica:** configurare Sphinx, completare docstring e
-  generare la documentazione API senza warning bloccanti.
-- **WA-21 — Guida utente:** documentare installazione, configurazione, uso,
-  esempi, input, output e troubleshooting nel README.
-- **WA-22 — Verifica finale:** controllare CI, qualità, UML, report, Definition
-  of Done e preparare una demo riproducibile.
+- **WA-20 — Technical documentation:** set up Sphinx, complete the
+  docstrings, and generate the API documentation without blocking
+  warnings.
+- **WA-21 — User guide:** document installation, configuration, usage,
+  examples, input, output, and troubleshooting in the README.
+- **WA-22 — Final verification:** check CI, quality, UML, the report, the
+  Definition of Done, and prepare a reproducible demo.
 
-### Cosa si deve fare
+### What must be done
 
-1. Provare le istruzioni di installazione partendo da un ambiente pulito.
-2. Eseguire l'esempio end-to-end descritto nel README.
-3. Controllare che UML, codice e documentazione descrivano lo stesso sistema.
-4. Generare la documentazione Sphinx e correggere link o riferimenti errati.
-5. Eseguire lint, test unitari, test di accettazione e benchmark finali.
-6. Preparare una demo breve con input, esecuzione, output e risultati di
-   performance.
-7. Verificare la Definition of Done di tutte le card prima di chiuderle.
+1. Try the installation instructions starting from a clean environment.
+2. Run the end-to-end example described in the README.
+3. Check that UML, code, and documentation describe the same system.
+4. Generate the Sphinx documentation and fix broken links or references.
+5. Run lint, unit tests, acceptance tests, and the final benchmarks.
+6. Prepare a short demo with input, execution, output, and performance
+   results.
+7. Verify the Definition of Done for every card before closing it.
 
-### Criteri di uscita
+### Exit criteria
 
-Il progetto è pronto quando un'altra persona può installarlo ed eseguirlo
-seguendo soltanto la documentazione, tutti i controlli CI sono verdi, le Pull
-Request sono state revisionate e gli artefatti richiesti sono presenti.
+The project is ready when another person can install and run it by
+following only the documentation, all CI checks are green, the Pull
+Requests have been reviewed, and the required artifacts are present.
 
-## Responsabilità e collaborazione
+## Responsibility and collaboration
 
-L'Owner indicato nella card è responsabile della realizzazione e delle
-correzioni. L'altro componente deve effettuare la peer review, controllando in
-particolare:
+The Owner indicated on the card is responsible for the implementation and
+its fixes. The other member must perform the peer review, checking in
+particular:
 
-- aderenza ad acceptance criteria e dipendenze;
-- chiarezza e manutenibilità della soluzione;
-- presenza e qualità dei test;
-- assenza di modifiche estranee allo scope;
-- aggiornamento della documentazione interessata.
+- adherence to acceptance criteria and dependencies;
+- clarity and maintainability of the solution;
+- presence and quality of the tests;
+- absence of changes outside the scope;
+- updating of the affected documentation.
 
-Gli story point rappresentano complessità e rischio, non ore garantite. Il team
-deve confrontare periodicamente stime e tempo effettivo e discutere eventuali
-scostamenti senza creare attività artificiali o modificare lo scope soltanto
-per ottenere una divisione numerica perfetta.
+Story points represent complexity and risk, not guaranteed hours. The
+team must periodically compare estimates against actual time and discuss
+any deviations without creating artificial activities or changing scope
+just to achieve a perfect numeric split.

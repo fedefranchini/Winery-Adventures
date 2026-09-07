@@ -1,12 +1,25 @@
-# Copie locali della consegna: la baseline versionata conserva
-# test, dataset, generatore e licenza, senza duplicare questi due documenti.
+# Local copies of the assignment: the versioned baseline preserves
+# tests, datasets, the generator, and the license without duplicating these two documents.
 docs/professor-assignment.md
 docs/professor-material.md
 .DS_Store
-**/.DS_Store
+.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
-winery_adventures.egg-info/
-docs_eng/docs/_build/
+.coverage
+.coverage.*
+htmlcov/
+wandb/
+/.verification/
+*.egg-info/
+/build/
+/dist/
+/docs/_build/
+benchmark-results.json
+/kernel-comparison.json
+/output.csv
+/data/results.csv
+/data/full_sensors.tsv
+/data/full_tank_info.tsv

@@ -1,15 +1,15 @@
 API reference
 =============
 
-Analyzer di base
-----------------
+Base analyzer
+--------------
 
 .. automodule:: winery_adventures.base
    :members:
    :show-inheritance:
 
-Validazione e I/O
------------------
+Validation and I/O
+-------------------
 
 .. automodule:: winery_adventures.validation
    :members:
@@ -17,8 +17,8 @@ Validazione e I/O
 .. automodule:: winery_adventures.io
    :members:
 
-Trasformazioni e calcoli
-------------------------
+Transformations and computations
+----------------------------------
 
 .. automodule:: winery_adventures.transformations
    :members:
@@ -28,11 +28,26 @@ Trasformazioni e calcoli
    :members:
    :show-inheritance:
 
-Pipeline ed esecuzione
-----------------------
+Pipeline and execution
+------------------------
 
 .. automodule:: winery_adventures.pipeline
    :members:
 
 .. automodule:: winery_adventures.main
+   :members:
+
+Dataset generation
+--------------------
+
+.. automodule:: data_generator
+   :members:
+
+Performance measurement
+--------------------------
+
+.. automodule:: benchmarks.benchmark_pipeline
+   :members:
+
+.. automodule:: benchmarks.compare_kernels
    :members:

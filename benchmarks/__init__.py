@@ -1,1 +1,1 @@
-"""Strumenti riproducibili per misurare le prestazioni della pipeline."""
+"""Reproducible tools for measuring the pipeline's performance."""
