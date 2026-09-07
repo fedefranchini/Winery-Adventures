@@ -1,62 +1,205 @@
-# Guida all'uso
+# Usage guide
 
+This document describes how to run Winery Adventures, configure logging,
+and interpret the produced file. Before running it, install the project by
+following the [setup guide](development-setup.md).
 
-Si descrive come eseguire la pipeline di Winery Adventures,
-e interpretare l'output prodotto.
+## Preparing the script
 
-## Esecuzione della pipeline
-
-`run_full_pipeline` (in `winery_adventures/main.py`) è il punto di ingresso
-end-to-end: legge i dati (in parallelo, con Joblib), esegue trasformazioni e
-calcolo HPC, logga il risultato su Weights & Biases e scrive l'output finale.
+Create a local file named `run_pipeline.py` in the repository root with the
+following content:
 
 ```python
 from winery_adventures.main import run_full_pipeline
 
 run_full_pipeline(
     input_csv="data/sensors_sample.tsv",
-    tank_info_csv="data/tank_info_sample.tsv",  # opzionale: può essere omesso (None)
+    tank_info_csv="data/tank_info_sample.tsv",
     output_csv="data/results.csv",
     project_name="WineryAdventures",
 )
 ```
 
-`tank_info_csv` è opzionale: se omesso, la pipeline funziona comunque,
-saltando le trasformazioni che richiedono i dati delle cisterne (es. conteggio
-letture per varietà d'uva).
+The function performs the following operations:
 
-### Logging su Weights & Biases
+1. reads the two inputs in parallel when `tank_info_csv` is set;
+2. validates the dataset contracts;
+3. applies transformations and the HPC computation;
+4. logs a summary to Weights & Biases (W&B) if `project_name` is set;
+5. writes the result as a comma-separated CSV.
 
-Se non hai un account wandb configurato, imposta `WANDB_MODE=offline` prima di
-eseguire, per evitare richieste di login:
+The parent directory of `output_csv` must exist. The example uses the
+`data` directory, already included in the repository.
+
+### Running with `tank_info`
+
+With the `tank_info_csv` parameter set, the pipeline associates readings
+with tank information via an inner join. The tank information must describe
+every tank present in the readings: a `tank_id` observed but missing from
+`tank_info` stops execution with a `DataValidationError` that reports its
+value. The join can therefore only discard tanks from the tank information
+that have no readings. If a tank contains several grape varieties, each
+reading is replicated once per variety.
+
+### Running without `tank_info`
+
+The `tank_info_csv` parameter is optional and defaults to `None`. To omit
+the tank information, change the corresponding line in the script:
+
+```python
+tank_info_csv=None,
+```
+
+In this case, the join and the per-variety expansion are not performed. The
+`grape_variety`, `capacity_liters`, and `grape_variety_num_readings`
+columns do not appear in the output.
+
+## Logging to Weights & Biases
+
+`run_full_pipeline` logs the run to W&B only when `project_name` is set, as
+in the script above. To use the online service, authenticate the
+environment beforehand:
+
+```bash
+wandb login
+```
+
+For a local run without authentication, set offline mode instead and start
+the script.
 
 **macOS / Linux:**
+
 ```bash
-WANDB_MODE=offline python tuo_script.py
+WANDB_MODE=offline python run_pipeline.py
 ```
 
 **Windows (PowerShell):**
+
 ```powershell
-$env:WANDB_MODE="offline"; python tuo_script.py
+$env:WANDB_MODE="offline"
+python run_pipeline.py
 ```
 
-## Output
+In offline mode, W&B keeps the run's data locally in the `wandb`
+directory. The `project_name` parameter identifies the destination project;
+leaving it at its default value of `None` disables W&B logging and the
+pipeline only writes the CSV.
 
-Il file scritto in `output_csv` contiene una riga per lettura sensore
-(espansa per varietà d'uva, se `tank_info_csv` è fornito), con le colonne
-originali più quelle calcolate dalla pipeline:
+The application summary contains `output_rows`, `tank_count`, and, if the
+score is present, `stress_score_count`, `stress_score`, `stress_score_min`,
+and `stress_score_max`. It does not contain individual readings.
+`stress_score` is the mean across the output rows: each tank is weighted by
+its number of readings and any per-variety expansion, not as a single
+observation. Each logging call starts and finishes a new run; any already
+active W&B run is finished before initialization.
 
-| Colonna | Sempre presente? | Descrizione |
+## Input data contracts
+
+Input files are tab-separated, regardless of their file name extension, and
+must contain at least one row.
+
+The reader infers types by examining the entire TSV, so quantities or
+decimals appearing after the first 100 rows are recognized correctly. This
+additional scan favors correctness and affects the reading time of large
+files. The application constraints are still verified after parsing: for
+example, a decimal capacity remains invalid.
+
+### Sensor readings
+
+| Column | Type and constraints | Presence |
 |---|---|---|
-| `avg_pH_per_tank` | sì | pH medio della cisterna |
-| `tank_num_readings` | sì | numero di letture della cisterna |
-| `temperature_deviation` | sì | scostamento assoluto dalla temperatura standard (26°C) |
-| `temperature_deviation_scaled` | solo se `quantity_liters` è presente | deviazione normalizzata su 1000 litri |
-| `grape_variety_num_readings` | solo se `tank_info_csv` è fornito | numero di letture per varietà d'uva |
-| `stress_score` | sì | indice di stress da fermentazione (calcolo HPC, formula pairwise) |
+| `tank_id` | integer, non-null | required |
+| `time` | non-empty string; the format generated by the project is `YYYY-MM-DD HH:MM:SS` | required |
+| `pH` | finite numeric, between 0 and 14 | required |
+| `temp` | finite numeric | required |
+| `quantity_liters` | finite and positive numeric when set | optional and nullable |
 
-## Contratti dati di input
+### Tank information
 
-Gli schemi attesi per `sensors_*.tsv` e `tank_info_*.tsv` (colonne, tipi,
-valori nulli ammessi) sono documentati in
-[`requirements-tests-matrix.md`](requirements-tests-matrix.md).
+| Column | Type and constraints | Presence |
+|---|---|---|
+| `tank_id` | integer, non-null and unique | required |
+| `grape_variety` | non-empty string; multiple varieties separated by a comma | required |
+| `capacity_liters` | positive, non-null integer | required |
+
+The detailed contract and its traceability to the tests are reported in the
+[requirements-tests matrix](requirements-tests-matrix.md).
+
+## Stress computation with missing quantities
+
+`quantity_liters` can be entirely missing or contain null values. For each
+tank, the computation only uses readings with a set, positive quantity. The
+resulting score is then assigned to all rows of the tank, including those
+whose quantity is null.
+
+Even a TSV column that is entirely empty is accepted: during reading it is
+normalized to the numeric type `Float64`, preserving all null values.
+Non-empty strings such as `unknown` continue to be rejected.
+
+If a tank has no usable quantity, no pairs can be computed:
+`stress_score` is `0.0`. This value does not certify the absence of
+physical stress: it indicates the absence of computable pairs. When
+processing completes successfully, the column is always present, of type
+`Float64`, and contains finite values. Finite but extreme values can cause
+overflow during the computation: in that case, a `DataValidationError` is
+raised with the tank's identifier, without writing a new CSV with unusable
+scores.
+
+## Output contract
+
+The file indicated by `output_csv` preserves the sensor columns and adds
+the columns produced by the transformations and the HPC computation. When
+the tank information is provided, it also includes the data obtained from
+the join.
+
+| Column | Presence | Description |
+|---|---|---|
+| `tank_id` | always | tank identifier |
+| `time` | always | reading's time reference |
+| `pH` | always | measured pH |
+| `temp` | always | measured temperature |
+| `quantity_liters` | if present in the input | quantity associated with the reading; may be null |
+| `capacity_liters` | with `tank_info_csv` | tank's nominal capacity |
+| `grape_variety` | with `tank_info_csv` | single variety associated with the row after expansion |
+| `avg_pH_per_tank` | always | tank's average pH |
+| `tank_num_readings` | always | number of the tank's readings before the per-variety expansion |
+| `grape_variety_num_readings` | with `tank_info_csv` | readings associated with the variety, across all tanks |
+| `temperature_deviation` | always | absolute deviation from the standard temperature of 26 °C |
+| `temperature_deviation_scaled` | if `quantity_liters` is present | deviation scaled to 1,000 liters; null on rows without a quantity |
+| `stress_score` | always | tank's pairwise stress, computed on the available quantities |
+
+## Troubleshooting
+
+### Python module not found
+
+Check that the virtual environment is active and repeat the installation:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+### Input file not found
+
+Paths are resolved relative to the directory the script is run from. Run
+the example from the repository root or use absolute paths.
+
+### Validation error
+
+A `DataValidationError` indicates missing columns, incompatible types,
+null required values, or values outside the allowed limits. Compare the
+file against the contracts described above.
+
+### Output not writable
+
+The pipeline does not automatically create the output's parent directory.
+Create it before running and check the write permissions.
+
+### W&B authentication requested
+
+Run `wandb login` for online logging, or set `WANDB_MODE=offline` as
+shown above.
+
+### First run slower
+
+Numba compiles the HPC function on first use. A longer initial time
+compared to subsequent runs is therefore expected.

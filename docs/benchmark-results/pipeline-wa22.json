@@ -1,0 +1,170 @@
+{
+  "environment": {
+    "python": "3.11.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "git_revision": "bce9f3d1bd151a995916cec0e6c8b34097ac101d",
+    "polars": "1.44.1",
+    "numba": "0.67.0",
+    "joblib": "1.5.3"
+  },
+  "parameters": {
+    "num_tanks": 100,
+    "num_readings": 100000,
+    "repetitions": 5,
+    "seed": 42
+  },
+  "dataset": {
+    "generation_seconds": 4.7731638999975985,
+    "sensor_sha256": "fdd4518535ce9dd98c4e034cb1f9ae5464771549ed7c7433bd10b8384d80d557",
+    "tank_info_sha256": "27b9dfe8c3ddf683a6b19499b3fbca38b158059b36e9dfdb96e5933cd37d0de4"
+  },
+  "iterations": [
+    {
+      "total_seconds": 0.4257127000018954,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.09397670000180369,
+          "python_peak_mib": 0.11058521270751953
+        },
+        "transformations": {
+          "seconds": 0.05115349999687169,
+          "python_peak_mib": 0.7779035568237305
+        },
+        "hpc": {
+          "seconds": 0.2457455999974627,
+          "python_peak_mib": 4.775948524475098
+        },
+        "output_io": {
+          "seconds": 0.03397170000243932,
+          "python_peak_mib": 0.0021905899047851562
+        }
+      }
+    },
+    {
+      "total_seconds": 0.457873399995151,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.09850279999955092,
+          "python_peak_mib": 0.052959442138671875
+        },
+        "transformations": {
+          "seconds": 0.04513030000089202,
+          "python_peak_mib": 0.7733993530273438
+        },
+        "hpc": {
+          "seconds": 0.2774656999972649,
+          "python_peak_mib": 4.775077819824219
+        },
+        "output_io": {
+          "seconds": 0.03579859999445034,
+          "python_peak_mib": 0.0021829605102539062
+        }
+      }
+    },
+    {
+      "total_seconds": 0.4286322999978438,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.10836879999988014,
+          "python_peak_mib": 0.052455902099609375
+        },
+        "transformations": {
+          "seconds": 0.05330030000186525,
+          "python_peak_mib": 0.7733917236328125
+        },
+        "hpc": {
+          "seconds": 0.23302410000178497,
+          "python_peak_mib": 4.7750244140625
+        },
+        "output_io": {
+          "seconds": 0.03317590000369819,
+          "python_peak_mib": 0.0021753311157226562
+        }
+      }
+    },
+    {
+      "total_seconds": 0.4253921999988961,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.0988294999988284,
+          "python_peak_mib": 0.0516204833984375
+        },
+        "transformations": {
+          "seconds": 0.04172879999532597,
+          "python_peak_mib": 0.7733840942382812
+        },
+        "hpc": {
+          "seconds": 0.25123359999997774,
+          "python_peak_mib": 4.775062561035156
+        },
+        "output_io": {
+          "seconds": 0.03271079999831272,
+          "python_peak_mib": 0.0021677017211914062
+        }
+      }
+    },
+    {
+      "total_seconds": 0.40688850000151433,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.08866309999575606,
+          "python_peak_mib": 0.05147552490234375
+        },
+        "transformations": {
+          "seconds": 0.042375999997602776,
+          "python_peak_mib": 0.77337646484375
+        },
+        "hpc": {
+          "seconds": 0.2396982999998727,
+          "python_peak_mib": 4.775054931640625
+        },
+        "output_io": {
+          "seconds": 0.03542260000540409,
+          "python_peak_mib": 0.0021600723266601562
+        }
+      }
+    }
+  ],
+  "summary": {
+    "median_total_seconds": 0.4257127000018954,
+    "min_total_seconds": 0.40688850000151433,
+    "max_total_seconds": 0.457873399995151,
+    "phases": {
+      "input_io": {
+        "median_seconds": 0.09850279999955092,
+        "min_seconds": 0.08866309999575606,
+        "max_seconds": 0.10836879999988014,
+        "max_python_peak_mib": 0.11058521270751953
+      },
+      "transformations": {
+        "median_seconds": 0.04513030000089202,
+        "min_seconds": 0.04172879999532597,
+        "max_seconds": 0.05330030000186525,
+        "max_python_peak_mib": 0.7779035568237305
+      },
+      "hpc": {
+        "median_seconds": 0.2457455999974627,
+        "min_seconds": 0.23302410000178497,
+        "max_seconds": 0.2774656999972649,
+        "max_python_peak_mib": 4.775948524475098
+      },
+      "output_io": {
+        "median_seconds": 0.03397170000243932,
+        "min_seconds": 0.03271079999831272,
+        "max_seconds": 0.03579859999445034,
+        "max_python_peak_mib": 0.0021905899047851562
+      }
+    }
+  },
+  "memory_note": "python_peak_mib misura le allocazioni Python tracciate; non include tutta la memoria nativa di Polars e Numba."
+}

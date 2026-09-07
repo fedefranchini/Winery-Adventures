@@ -1,0 +1,57 @@
+{
+  "environment": {
+    "python": "3.11.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "numba": "0.67.0",
+    "numpy": "2.4.6",
+    "polars": "1.44.1",
+    "numba_threads": 32,
+    "git_revision": "bce9f3d1bd151a995916cec0e6c8b34097ac101d"
+  },
+  "source_sha256": {
+    "benchmarks/compare_kernels.py": "183437030f6967ca6a4830582c0e0a5154fac594da74657852b67e5802a87766",
+    "benchmarks/benchmark_pipeline.py": "10d94570a3207358747533f58b69dcfed2680597d86ea23ec7434ed68e64d742",
+    "data_generator.py": "9cd3ca8924c7ab557842a152fadf294a1e4986ca5b31e6f88263543006d33891",
+    "winery_adventures/computations.py": "a44c94fa09984d454ab6a1da5d9247ce3a891c76abe6aa999368dbcf60946d45",
+    "winery_adventures/transformations.py": "d614e7acf81a5e23e3638b1b98c9124aba6e9bc0a6d0f2db9e9097f1183a5f97",
+    "winery_adventures/io.py": "6d4a0d3028d847f7767829da530ce5f401f0fda2f5647e4b2727b3733efaa438",
+    "winery_adventures/validation.py": "fc35463ddd42f7c74b0e549e84c481497f1d449ace3387fe6f7edccf0d27e7ea"
+  },
+  "parameters": {
+    "num_tanks": 100,
+    "num_readings": 100000,
+    "repetitions": 5,
+    "seed": 42
+  },
+  "dataset": {
+    "sensor_sha256": "fdd4518535ce9dd98c4e034cb1f9ae5464771549ed7c7433bd10b8384d80d557",
+    "tank_info_sha256": "27b9dfe8c3ddf683a6b19499b3fbca38b158059b36e9dfdb96e5933cd37d0de4",
+    "output_rows": 300000,
+    "computable_rows": 270123
+  },
+  "seconds": {
+    "serial": [
+      1.1243150000009337,
+      1.1728328999961377,
+      1.1178003000022727,
+      1.1382192000019131,
+      1.1392027999972925
+    ],
+    "parallel": [
+      0.12177890000020852,
+      0.16611120000015944,
+      0.11748790000274312,
+      0.12706839999736985,
+      0.13482160000421572
+    ]
+  },
+  "median_seconds": {
+    "serial": 1.1382192000019131,
+    "parallel": 0.12706839999736985
+  },
+  "speedup": 8.957531534397795,
+  "max_absolute_error": 4.249045559845399e-12,
+  "scores_finite": true,
+  "method": "Same current formula and complete readings; only Numba parallel compilation differs. Times include kernel calls and collection of scores, excluding data preparation and compilation. This is not a benchmark of the historical repository revision."
+}

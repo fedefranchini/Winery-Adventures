@@ -1,4 +1,4 @@
-"""Benchmark riproducibile delle fasi principali di Winery Adventures."""
+"""Reproducible benchmark of the main phases of Winery Adventures."""
 
 import argparse
 import hashlib
@@ -30,8 +30,8 @@ PHASES = ("input_io", "transformations", "hpc", "output_io")
 
 
 def _measure(function: Callable[[], ResultT]) -> tuple[ResultT, float, float]:
-    """Esegue una funzione misurando tempo e picco delle allocazioni Python."""
-    # Avvia insieme il tracciamento della memoria e il cronometro ad alta risoluzione.
+    """Run a function, measuring time and the peak of Python allocations."""
+    # Start memory tracing and the high-resolution timer together.
     tracemalloc.start()
     started_at = time.perf_counter()
     try:
@@ -45,8 +45,8 @@ def _measure(function: Callable[[], ResultT]) -> tuple[ResultT, float, float]:
 
 
 def _git_revision() -> str:
-    """Restituisce il commit misurato, se il benchmark viene eseguito in un repository Git."""
-    # Il commit permette di associare ogni misura a una versione precisa del codice.
+    """Return the base commit, if the benchmark runs inside a Git repository."""
+    # HEAD alone does not identify any uncommitted changes.
     try:
         return subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -59,9 +59,9 @@ def _git_revision() -> str:
 
 
 def _sha256(path: Path) -> str:
-    """Calcola l'impronta di un input per rendere verificabile la riproducibilità."""
+    """Compute an input's fingerprint to make reproducibility verifiable."""
     digest = hashlib.sha256()
-    # Legge il file a blocchi per non caricare interamente in memoria dataset grandi.
+    # Read the file in chunks to avoid loading large datasets entirely into memory.
     with path.open("rb") as source:
         for block in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(block)
@@ -69,8 +69,8 @@ def _sha256(path: Path) -> str:
 
 
 def _create_dataset(data_dir: Path, num_tanks: int, num_readings: int, seed: int) -> dict[str, Any]:
-    """Genera e salva una coppia di TSV deterministica per il benchmark."""
-    # Lo stesso seed deve produrre gli stessi file e quindi le stesse impronte SHA-256.
+    """Generate and save a deterministic pair of TSV files for the benchmark."""
+    # The same seed must produce the same files and therefore the same SHA-256 hashes.
     random.seed(seed)
     generation_started_at = time.perf_counter()
 
@@ -81,7 +81,7 @@ def _create_dataset(data_dir: Path, num_tanks: int, num_readings: int, seed: int
     sensor_path = data_dir / "benchmark_sensors.tsv"
     tank_info_path = data_dir / "benchmark_tank_info.tsv"
 
-    # Materializza gli input su disco per includere il costo reale di lettura TSV.
+    # Write the inputs to disk to include the actual cost of reading TSV files.
     pl.DataFrame(tank_info, schema=["tank_id", "grape_variety", "capacity_liters"]).write_csv(
         tank_info_path,
         separator="\t",
@@ -101,8 +101,8 @@ def _create_dataset(data_dir: Path, num_tanks: int, num_readings: int, seed: int
 
 
 def _load_inputs(sensor_path: Path, tank_info_path: Path) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Legge in parallelo i due input come avviene nell'orchestrazione applicativa."""
-    # I thread sono adatti a queste due attività prevalentemente di I/O.
+    """Read the two inputs in parallel, as in the application orchestration."""
+    # Threads are suitable for these two predominantly I/O-bound tasks.
     sensors, tank_info = joblib.Parallel(n_jobs=2, prefer="threads")(
         [
             joblib.delayed(read_sensors)(str(sensor_path)),
@@ -113,10 +113,10 @@ def _load_inputs(sensor_path: Path, tank_info_path: Path) -> tuple[pl.DataFrame,
 
 
 def _run_iteration(sensor_path: Path, tank_info_path: Path, output_path: Path) -> dict[str, Any]:
-    """Misura separatamente I/O, trasformazioni, calcolo HPC e scrittura."""
+    """Separately measure I/O, transformations, HPC computation, and writing."""
     iteration_started_at = time.perf_counter()
 
-    # Ogni fase conserva il proprio tempo e picco di memoria per individuare il collo di bottiglia.
+    # Each phase records its time and peak memory to identify the bottleneck.
     inputs, input_seconds, input_peak_mib = _measure(lambda: _load_inputs(sensor_path, tank_info_path))
     sensors, tank_info = inputs
 
@@ -124,11 +124,20 @@ def _run_iteration(sensor_path: Path, tank_info_path: Path, output_path: Path) -
         lambda: WineryTransformer(tank_info).analyze_data(sensors)
     )
     computed, hpc_seconds, hpc_peak_mib = _measure(lambda: WineryHPCComputations().analyze_data(transformed))
+
+    # A performance measurement is valid only if the computation produces
+    # numerically usable scores, even when quantities are missing.
+    stress_scores = computed.get_column("stress_score")
+    stress_scores_finite = stress_scores.null_count() == 0 and stress_scores.is_finite().all()
+    if not stress_scores_finite:
+        raise RuntimeError("Benchmark produced non-finite stress scores")
+
     _, output_seconds, output_peak_mib = _measure(lambda: write_output(computed, str(output_path)))
 
     return {
         "total_seconds": time.perf_counter() - iteration_started_at,
         "output_rows": computed.height,
+        "stress_scores_finite": stress_scores_finite,
         "phases": {
             "input_io": {"seconds": input_seconds, "python_peak_mib": input_peak_mib},
             "transformations": {
@@ -142,10 +151,10 @@ def _run_iteration(sensor_path: Path, tank_info_path: Path, output_path: Path) -
 
 
 def _summarize(iterations: list[dict[str, Any]]) -> dict[str, Any]:
-    """Aggrega più misurazioni usando mediana e intervallo osservato."""
+    """Aggregate multiple measurements using the median and observed range."""
     phase_summary = {}
     for phase in PHASES:
-        # La mediana riduce l'influenza di singole esecuzioni insolitamente lente.
+        # The median reduces the influence of individual unusually slow runs.
         seconds = [iteration["phases"][phase]["seconds"] for iteration in iterations]
         peak_memory = [iteration["phases"][phase]["python_peak_mib"] for iteration in iterations]
         phase_summary[phase] = {
@@ -170,21 +179,44 @@ def run_benchmark(
     repetitions: int = 3,
     seed: int = 42,
 ) -> dict[str, Any]:
-    """Genera gli input ed esegue una baseline ripetibile della pipeline."""
+    """Generate the inputs and run a repeatable baseline of the pipeline.
+
+    Args:
+        num_tanks: positive number of tanks generated.
+        num_readings: positive number of readings generated.
+        repetitions: positive number of measured iterations.
+        seed: seed shared by the generation of the two inputs.
+
+    Returns:
+        Environment, parameters, input fingerprints, individual
+        measurements, and summary.
+
+    Raises:
+        ValueError: if a size or the number of repetitions is not positive,
+            or if the generated data cannot be processed.
+        RuntimeError: if an iteration produces null or non-finite scores.
+        OSError: if a temporary file cannot be read or written.
+    """
     if num_tanks <= 0 or num_readings <= 0 or repetitions <= 0:
         raise ValueError("num_tanks, num_readings and repetitions must be positive")
 
-    # La prima chiamata compila Numba fuori dalla finestra temporale misurata.
+    # The first call triggers Numba compilation outside the measured time window.
+    # Polars returns read-only arrays: Numba treats them as a distinct signature,
+    # so warm-up must cover both variants; otherwise, compilation would occur
+    # within the first measured iteration.
     warmup_values = np.array([3.4], dtype=np.float64)
     pairwise_stress_function(warmup_values, warmup_values, warmup_values)
+    readonly_warmup_values = warmup_values.copy()
+    readonly_warmup_values.flags.writeable = False
+    pairwise_stress_function(readonly_warmup_values, readonly_warmup_values, readonly_warmup_values)
 
-    # Input e output intermedi vengono eliminati automaticamente al termine dell'esecuzione.
+    # Intermediate inputs and outputs are automatically deleted when execution finishes.
     with tempfile.TemporaryDirectory(prefix="winery-benchmark-") as temporary_directory:
         data_dir = Path(temporary_directory)
         dataset = _create_dataset(data_dir, num_tanks, num_readings, seed)
 
         iterations = []
-        # Ogni ripetizione riusa gli stessi input per rendere confrontabili le misure.
+        # Each repetition reuses the same inputs to make the measurements comparable.
         for repetition in range(repetitions):
             output_path = data_dir / f"result-{repetition + 1}.csv"
             iterations.append(_run_iteration(dataset["sensor_path"], dataset["tank_info_path"], output_path))
@@ -212,30 +244,30 @@ def run_benchmark(
         "iterations": iterations,
         "summary": _summarize(iterations),
         "memory_note": (
-            "python_peak_mib misura le allocazioni Python tracciate; "
-            "non include tutta la memoria nativa di Polars e Numba."
+            "python_peak_mib measures traced Python allocations; "
+            "it does not include all the native memory used by Polars and Numba."
         ),
     }
 
 
 def parse_args() -> argparse.Namespace:
-    """Legge i parametri del benchmark dalla riga di comando."""
-    parser = argparse.ArgumentParser(description="Misura tempo e memoria della pipeline Winery Adventures.")
-    parser.add_argument("--tanks", type=int, default=100, help="Numero di cisterne da generare.")
-    parser.add_argument("--readings", type=int, default=100_000, help="Numero di letture da generare.")
-    parser.add_argument("--repetitions", type=int, default=3, help="Numero di misurazioni.")
-    parser.add_argument("--seed", type=int, default=42, help="Seed del dataset riproducibile.")
+    """Read the benchmark parameters from the command line."""
+    parser = argparse.ArgumentParser(description="Measure time and memory of the Winery Adventures pipeline.")
+    parser.add_argument("--tanks", type=int, default=100, help="Number of tanks to generate.")
+    parser.add_argument("--readings", type=int, default=100_000, help="Number of readings to generate.")
+    parser.add_argument("--repetitions", type=int, default=3, help="Number of measurements.")
+    parser.add_argument("--seed", type=int, default=42, help="Seed for the reproducible dataset.")
     parser.add_argument(
         "--output",
         type=Path,
         default=Path("benchmark-results.json"),
-        help="File JSON in cui salvare misure e metadati.",
+        help="JSON file to save measurements and metadata to.",
     )
     return parser.parse_args()
 
 
 def main() -> None:
-    """Esegue il benchmark e salva il risultato in formato JSON."""
+    """Run the benchmark and save the result in JSON format."""
     args = parse_args()
     results = run_benchmark(
         num_tanks=args.tanks,
@@ -243,7 +275,7 @@ def main() -> None:
         repetitions=args.repetitions,
         seed=args.seed,
     )
-    # Il formato JSON conserva sia le singole misure sia il riepilogo aggregato.
+    # The JSON format preserves both individual measurements and the aggregated summary.
     args.output.write_text(json.dumps(results, indent=2), encoding="utf-8")
     print(f"Benchmark completed: results written to {args.output}")
 

@@ -1,9 +1,9 @@
-# pyproject.toml è la fonte unica per metadati, dipendenze e strumenti di
-# sviluppo. In questo modo non è necessario mantenere configurazioni duplicate.
+# pyproject.toml is the single source for metadata, dependencies, and development
+# tools. This avoids the need to maintain duplicate configurations.
 
 [build-system]
-# setuptools costruisce e installa il package; wheel permette di produrre un
-# artefatto standard quando servirà verificare la distribuzione del progetto.
+# setuptools builds and installs the package; wheel produces a standard
+# artifact when the project's distribution needs to be verified.
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
@@ -19,60 +19,66 @@ authors = [
     { name = "FedeFranchini" },
 ]
 
-# Dipendenze runtime richieste dalla consegna. I limiti sulle
-# major version evitano aggiornamenti incompatibili, lasciando a pip la scelta
-# di patch e minor release compatibili con la versione Python installata.
+# Runtime dependencies required by the assignment. Major-version limits
+# prevent incompatible upgrades while letting pip choose patch and minor
+# releases compatible with the installed Python version.
 dependencies = [
     "joblib>=1.3,<2",
     "numba>=0.59,<1",
     "numpy>=1.24,<3",
-    "polars>=1.0,<2",
+    # Minimum version verified with the empty_as_null option of explode.
+    "polars>=1.44.1,<2",
     "tqdm>=4.66,<5",
-    "wandb>=0.17,<1",
+    # Supports the explicit reinit="finish_previous" setting.
+    "wandb>=0.19.10,<1",
 ]
 
 [project.optional-dependencies]
-# Installare il gruppo con: python -m pip install -e ".[dev]"
+# Install this group with: python -m pip install -e ".[dev]"
 dev = [
     "black>=24,<27",
     "pytest>=8,<10",
     "pytest-cov>=5,<8",
     "ruff>=0.5,<1",
-    # Sphinx genera la documentazione API e ne permette la verifica in CI.
+    # Sphinx generates API documentation; MyST integrates Markdown guides.
     "sphinx>=7,<9",
+    "myst-parser>=3,<5",
 ]
 
 [tool.setuptools]
-# Il benchmark riusa il generatore fornito come modulo Python installabile.
+# The benchmark reuses the supplied generator as an installable Python module.
 py-modules = ["data_generator"]
 
 [tool.setuptools.packages.find]
-# Installa il package applicativo e il runner dei benchmark, escludendo tests,
-# data e docs dalla distribuzione.
+# Install the application package and benchmark runner, excluding tests,
+# data, and docs from the distribution.
 where = ["."]
 include = ["winery_adventures*", "benchmarks*"]
 
 [tool.pytest.ini_options]
-# I test originali del docente usano il marker slow nel test di accettazione. La sua
-# dichiarazione evita warning e consente di escluderlo con: pytest -m "not slow".
+# The professor's original tests use the slow marker for the acceptance test.
+# Declaring it avoids warnings and allows excluding it with: pytest -m "not slow".
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers"]
 markers = [
-    "slow: test end-to-end o computazionalmente più costoso",
+    "slow: end-to-end or computationally more expensive test",
 ]
 
 [tool.coverage.run]
-# La branch coverage rileva rami condizionali non verificati oltre alle righe
-# non eseguite. Il report viene applicato solo al codice applicativo.
+# Branch coverage detects untested conditional branches as well as unexecuted
+# lines. In addition to the application package, the report covers the dataset
+# generator used by examples and benchmarks. The body of generate_sensor_row
+# runs in Joblib workers and cannot be traced by coverage.
 branch = true
-source = ["winery_adventures"]
+source = ["winery_adventures", "data_generator"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
+fail_under = 90
 
 [tool.black]
-# 120 caratteri rispettano lo stile già usato nei test e nel generatore forniti.
+# 120 characters match the style already used in the supplied tests and generator.
 line-length = 120
 target-version = ["py310"]
 
@@ -81,12 +87,12 @@ line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
-# E/F: errori pycodestyle e Pyflakes; I: import; B: bugbear; UP: sintassi Python
-# moderna. La regola sui nomi non è abilitata perché i dati scientifici usano
-# legittimamente identificatori come pH già presenti nel materiale fornito.
+# E/F: pycodestyle and Pyflakes errors; I: imports; B: bugbear; UP: modern Python
+# syntax. Naming rules are not enabled because scientific data legitimately
+# uses identifiers such as pH, already present in the supplied material.
 select = ["E", "F", "I", "B", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
-# I test originali del professore restano invariati: I001 evita di riscriverne
-# soltanto l'ordine degli import; B018 consente espressioni usate come assert.
+# I001 avoids purely mechanical changes to the import order in tests;
+# B018 allows expressions used as assertions in the reference tests.
 "tests/**/*.py" = ["B018", "I001"]

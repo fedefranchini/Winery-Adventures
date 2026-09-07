@@ -41,10 +41,20 @@ def test_null_analyzers_run(sensors_df):
 
 def test_log_wandb(monkey_wandb_run):
     pipeline = WineryPipeline([WineryTransformer(), WineryHPCComputations()], project_name="TestProj")
-    pipeline.log_to_wandb(pl.DataFrame({"tank_id": [1, 2], "stress_score": [0.5, 0.6]}))
+    # The mean weights output rows rather than assigning equal weight to tanks.
+    pipeline.log_to_wandb(pl.DataFrame({"tank_id": [1, 1, 2], "stress_score": [0.5, 0.5, 0.8]}))
 
     assert wandb.run == monkey_wandb_run, "wandb.init() should be called"
-    assert any("stress_score" in d for d in monkey_wandb_run.logs), "No 'stress_score' logs found"
+    assert monkey_wandb_run.logs == [
+        {
+            "output_rows": 3,
+            "tank_count": 2,
+            "stress_score_count": 3,
+            "stress_score": pytest.approx(0.6),
+            "stress_score_min": 0.5,
+            "stress_score_max": 0.8,
+        }
+    ]
 
 
 def test_pipeline_logs_phases_without_sensor_values(caplog, sensors_df):
@@ -62,6 +72,34 @@ def test_pipeline_logs_phases_without_sensor_values(caplog, sensors_df):
     assert "3.3" not in caplog.text
 
 
+def test_wandb_logging_uses_explicit_reinit_and_finishes_each_run(monkeypatch):
+    # Each call uses a separate run and completes its init/log/finish cycle.
+    calls = []
+
+    class RecordingRun:
+        def log(self, data):
+            calls.append(("log", data))
+
+        def finish(self):
+            calls.append(("finish", None))
+
+    def init(**kwargs):
+        calls.append(("init", kwargs))
+        return RecordingRun()
+
+    monkeypatch.setattr(wandb, "init", init)
+    pipeline = WineryPipeline([], project_name="TestProj")
+    for _ in range(2):
+        pipeline.log_to_wandb(pl.DataFrame({"tank_id": [1]}))
+
+    expected_cycle = [
+        ("init", {"project": "TestProj", "reinit": "finish_previous"}),
+        ("log", {"output_rows": 1, "tank_count": 1}),
+        ("finish", None),
+    ]
+    assert calls == expected_cycle * 2
+
+
 def test_pipeline_logs_and_propagates_analyzer_errors(caplog, sensors_df):
     class FailingAnalyzer:
         def analyze_data(self, df):
@@ -69,7 +107,7 @@ def test_pipeline_logs_and_propagates_analyzer_errors(caplog, sensors_df):
 
     pipeline = WineryPipeline([FailingAnalyzer()])
 
-    # L'errore resta visibile al chiamante e il log identifica soltanto il componente.
+    # The error remains visible to the caller, and the log identifies only the component.
     with caplog.at_level(logging.ERROR), pytest.raises(RuntimeError, match="controlled failure"):
         pipeline.run(sensors_df)
 
@@ -78,20 +116,21 @@ def test_pipeline_logs_and_propagates_analyzer_errors(caplog, sensors_df):
 
 
 def test_wandb_run_is_finished_when_logging_fails(monkeypatch):
-    # Registra la chiamata a finish senza contattare realmente il servizio wandb.
+    # Record the call to finish without actually contacting the wandb service.
     finish_calls = []
 
-    monkeypatch.setattr(wandb, "init", lambda **kwargs: object())
+    class FailingRun:
+        def log(self, data):
+            raise RuntimeError("wandb unavailable")
 
-    def fail_log(data):
-        raise RuntimeError("wandb unavailable")
+        def finish(self):
+            finish_calls.append(True)
 
-    monkeypatch.setattr(wandb, "log", fail_log)
-    monkeypatch.setattr(wandb, "finish", lambda: finish_calls.append(True))
+    monkeypatch.setattr(wandb, "init", lambda **kwargs: FailingRun())
 
     pipeline = WineryPipeline([], project_name="TestProj")
 
-    # Anche un errore durante log deve attraversare il blocco finally della pipeline.
+    # An error during log must also pass through the pipeline's finally block.
     with pytest.raises(RuntimeError, match="wandb unavailable"):
         pipeline.log_to_wandb(pl.DataFrame({"stress_score": [0.5]}))
 

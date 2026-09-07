@@ -48,8 +48,12 @@ def test_validate_sensors_allows_null_optional_quantity(sensors_df):
 
 
 def test_validate_sensors_allows_missing_optional_quantity(sensors_df_without_quantities):
-    # quantity_liters può mancare completamente secondo il contratto dei sensori.
+    # quantity_liters may be entirely absent under the sensor data contract.
     validate_sensors(sensors_df_without_quantities)
+
+
+def test_validate_sensors_allows_all_null_quantity(sensors_df):
+    validate_sensors(sensors_df.with_columns(pl.lit(None).alias("quantity_liters")))
 
 
 def test_validate_sensors_rejects_non_positive_quantity(sensors_df):
@@ -72,7 +76,7 @@ def test_validate_sensors_rejects_non_positive_quantity(sensors_df):
     ],
 )
 def test_validate_sensors_rejects_invalid_types_and_values(sensors_df, expression, error_message):
-    # Ogni espressione altera un solo campo per isolare la causa dell'errore.
+    # Each expression changes only one field to isolate the cause of the error.
     invalid_df = sensors_df.with_columns(expression)
 
     with pytest.raises(DataValidationError, match=error_message):
@@ -91,7 +95,7 @@ def test_validate_tank_info_rejects_missing_columns(tank_info_df):
 
 
 def test_validate_tank_info_rejects_empty_data(tank_info_df):
-    # clear conserva lo schema originale ma rimuove tutte le righe.
+    # clear preserves the original schema but removes all rows.
     with pytest.raises(DataValidationError, match="at least one row"):
         validate_tank_info(tank_info_df.clear())
 
@@ -114,7 +118,7 @@ def test_validate_tank_info_rejects_null_required_values(tank_info_df):
     ],
 )
 def test_validate_tank_info_rejects_invalid_types_and_values(tank_info_df, expression, error_message):
-    # Controlla separatamente tipi, stringhe vuote e capacità non valide.
+    # Check types, empty strings, and invalid capacities separately.
     invalid_df = tank_info_df.with_columns(expression)
 
     with pytest.raises(DataValidationError, match=error_message):
@@ -125,4 +129,11 @@ def test_validate_tank_info_rejects_duplicate_tanks(tank_info_df):
     invalid_df = pl.concat([tank_info_df, tank_info_df.head(1)])
 
     with pytest.raises(DataValidationError, match="duplicate tank_id"):
+        validate_tank_info(invalid_df)
+
+
+def test_validate_tank_info_rejects_empty_variety_items(tank_info_df):
+    invalid_df = tank_info_df.with_columns(pl.lit("Merlot,,Cabernet").alias("grape_variety"))
+
+    with pytest.raises(DataValidationError, match="empty grape_variety item"):
         validate_tank_info(invalid_df)

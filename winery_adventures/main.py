@@ -1,4 +1,4 @@
-"""Punto di ingresso per l'esecuzione completa di Winery Adventures."""
+"""Entry point for the full execution of Winery Adventures."""
 
 import joblib
 
@@ -14,47 +14,39 @@ def run_full_pipeline(
     output_csv: str = "output.csv",
     project_name: str | None = None,
 ) -> None:
-    """Carica i dati, esegue gli analyzer e salva il risultato.
+    """Load the data, run the analyzers, and save the result.
 
-    La lettura dei due dataset avviene in parallelo quando sono presenti sia i
-    sensori sia le informazioni delle cisterne. Il logging remoto su W&B viene
-    delegato alla pipeline. Se ``tank_info_csv`` non è fornito, vengono saltate
-    soltanto le trasformazioni che richiedono l'anagrafica delle cisterne.
+    The two datasets are read in parallel when both sensor readings and
+    tank information are present. Logging to W&B is only performed when
+    ``project_name`` is set. If ``tank_info_csv`` is not provided, only the
+    transformations that require the tank information are skipped.
 
     Args:
-        input_csv: percorso del TSV contenente le letture dei sensori.
-        tank_info_csv: percorso opzionale del TSV con le informazioni delle
-            cisterne.
-        output_csv: destinazione CSV del risultato elaborato.
-        project_name: nome del progetto W&B a cui inviare le metriche.
+        input_csv: path to the TSV containing the sensor readings.
+        tank_info_csv: optional path to the TSV with the tank information.
+        output_csv: CSV destination for the processed result.
+        project_name: optional W&B project name to send aggregated metrics
+            to. If omitted, W&B logging is disabled.
 
     Raises:
-        FileNotFoundError: se un file di input richiesto non esiste.
-        DataValidationError: se un dataset non rispetta il contratto previsto.
-        OSError: se il risultato non può essere scritto.
+        FileNotFoundError: if a required input file does not exist.
+        DataValidationError: if a dataset does not satisfy the expected contract.
+        OSError: if the result cannot be written.
     """
-    results = {}
+    tasks = [joblib.delayed(read_sensors)(input_csv)]
 
-    def _load_sensors():
-        results["sensors"] = read_sensors(input_csv)
+    if tank_info_csv is not None:
+        tasks.append(joblib.delayed(read_tank_info)(tank_info_csv))
 
-        # results viene riempito via 'closure': il ritorno di Parallel non è affidabile nei test.
+    # The results returned by Joblib avoid dependencies on shared memory
+    # and keep loading compatible with different backends.
+    loaded_datasets = joblib.Parallel(n_jobs=-1, prefer="threads")(tasks)
 
-    def _load_tank_info():
-        results["tank_info"] = read_tank_info(tank_info_csv)
-
-    tasks = [joblib.delayed(_load_sensors)()]
-
-    if tank_info_csv is not None:  # tank_info è opzionale: si legge solo se fornito
-        tasks.append(joblib.delayed(_load_tank_info)())
-
-    joblib.Parallel(n_jobs=-1, prefer="threads")(tasks)  # 'threads' per condividere la memoria
-
-    sensors_df = results["sensors"]
-    tank_info_df = results.get("tank_info")  # restituisce None se tank_info_csv non fornito
+    sensors_df = loaded_datasets[0]
+    tank_info_df = loaded_datasets[1] if tank_info_csv is not None else None
 
     analyzers = [WineryTransformer(tank_info=tank_info_df), WineryHPCComputations()]
     pipeline = WineryPipeline(analyzers=analyzers, project_name=project_name)
-    result_df = pipeline.run(sensors_df, log_to_wandb=True)
+    result_df = pipeline.run(sensors_df, log_to_wandb=project_name is not None)
 
     write_output(result_df, output_csv)

@@ -62,7 +62,7 @@ def tank_info_df_grape_variety_split():
 @pytest.fixture()
 def monkey_joblib(monkeypatch):
     def execute_parallel(*args, **kwargs):
-        [func(*inner_args, **kwargs) for func, inner_args, kwargs in args[0]]
+        return [func(*inner_args, **kwargs) for func, inner_args, kwargs in args[0]]
 
     fake_parallel_mock = Mock(side_effect=execute_parallel)
     fake_delayed_mock = Mock(wraps=joblib.delayed)
@@ -71,23 +71,6 @@ def monkey_joblib(monkeypatch):
     monkeypatch.setattr(joblib, "delayed", fake_delayed_mock)
 
     yield fake_parallel_mock, fake_delayed_mock
-
-
-# @pytest.fixture()
-# def monkey_joblib_delayed(monkeypatch):
-#     joblib_delayed = joblib.delayed
-
-#     def fake_delayed(function):
-#         fake_delayed.delayed_called = True
-#         return joblib_delayed(function)
-
-#     fake_delayed_mock = Mock()
-
-#     monkeypatch.setattr(joblib.Parallel, "__call__", fake_parallel_mock)
-
-#     yield fake_parallel_mock
-
-#     monkeypatch.setattr(joblib, "delayed", fake_delayed)
 
 
 @pytest.fixture()

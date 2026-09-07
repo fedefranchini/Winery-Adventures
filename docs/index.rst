@@ -1,17 +1,30 @@
 Winery Adventures
 =================
 
-Questa documentazione descrive l'API pubblica usata per caricare, validare,
-trasformare e analizzare i dati delle fermentazioni.
+The documentation collects the instructions to install and use the
+project, the contracts verified by the tests, the architectural choices,
+and the public API reference.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contenuti
+   :caption: Guides and specifications
+
+   usage-guide
+   development-setup
+   requirements-tests-matrix
+   architecture
+   benchmark-report
+   project-management
+   development-phases
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API
 
    api
 
-Indici
-------
+Indices
+-------
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -1,57 +1,71 @@
-"""Pipeline sequenziale e logging applicativo di Winery Adventures."""
+"""Sequential pipeline and application logging for Winery Adventures."""
 
 import logging
 from collections.abc import Sequence
+from typing import Protocol
 
 import polars as pl
 import wandb
 
-from winery_adventures.base import BaseWineryAnalyzer
-
 logger = logging.getLogger(__name__)
 
 
-class WineryPipeline:
-    """Esegue in sequenza una lista di analyzer e gestisce il logging su wandb."""
+class WineryAnalyzer(Protocol):
+    """Structural contract of the components the pipeline can run."""
 
-    def __init__(self, analyzers: Sequence[BaseWineryAnalyzer], project_name: str | None = None):
-        """Configura la sequenza di elaborazione.
+    def analyze_data(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Describe the operation required of every pipeline component.
 
         Args:
-            analyzers: componenti eseguiti nell'ordine fornito.
-            project_name: nome opzionale del progetto W&B.
+            df: data received from the previous component.
+
+        Returns:
+            The processed DataFrame to pass to the next component.
+        """
+        ...
+
+
+class WineryPipeline:
+    """Runs a list of analyzers in sequence and handles wandb logging."""
+
+    def __init__(self, analyzers: Sequence[WineryAnalyzer], project_name: str | None = None):
+        """Configure the processing sequence.
+
+        Args:
+            analyzers: components run in the order provided.
+            project_name: optional W&B project name.
         """
         self.analyzers = analyzers
         self.project_name = project_name
 
     def run(self, df: pl.DataFrame, log_to_wandb: bool = False) -> pl.DataFrame:
-        """Applica gli analyzer in sequenza e, se richiesto, registra il risultato.
+        """Apply the analyzers in sequence and, if requested, log the result.
 
         Args:
-            df: letture iniziali della pipeline.
-            log_to_wandb: abilita l'invio del risultato a W&B.
+            df: the pipeline's initial readings.
+            log_to_wandb: enable sending the result to W&B.
 
         Returns:
-            Il DataFrame prodotto dall'ultimo analyzer.
+            The DataFrame produced by the last analyzer.
 
         Raises:
-            Exception: propaga l'errore sollevato da un analyzer o da W&B.
+            Exception: propagates the error raised by an analyzer or by W&B.
         """
 
         logger.info("Starting winery pipeline with %d analyzers", len(self.analyzers))
 
-        # L'output di ogni analyzer diventa l'input del successivo.
+        # Each analyzer's output becomes the next analyzer's input.
         for analyzer in self.analyzers:
             analyzer_name = type(analyzer).__name__
             logger.info("Running analyzer %s", analyzer_name)
-            # Registra quale componente è fallito senza includere i valori del dataset.
+            # Log which component failed without including dataset values.
             try:
                 df = analyzer.analyze_data(df)
             except Exception:
                 logger.error("Analyzer %s failed", analyzer_name)
                 raise
 
-        # Il logging remoto resta disattivabile per test ed esecuzioni locali.
+        # Remote logging can be disabled for tests and local runs.
         if log_to_wandb:
             self.log_to_wandb(df)
 
@@ -59,21 +73,36 @@ class WineryPipeline:
         return df
 
     def log_to_wandb(self, df: pl.DataFrame) -> None:
-        """Invia il contenuto del DataFrame a W&B.
+        """Send a summary of the processed DataFrame to W&B.
 
         Args:
-            df: risultato della pipeline da registrare.
+            df: the pipeline result to summarize and log.
 
         Raises:
-            Exception: propaga gli errori di inizializzazione o logging di W&B,
-                chiudendo comunque la run già avviata.
+            Exception: propagates W&B initialization or logging errors,
+                still finishing the already started run.
         """
 
+        metrics: dict[str, int | float] = {"output_rows": df.height}
+
+        if "tank_id" in df.columns:
+            metrics["tank_count"] = df.get_column("tank_id").n_unique()
+
+        if "stress_score" in df.columns:
+            stress_scores = df.get_column("stress_score").drop_nulls().cast(pl.Float64)
+            metrics["stress_score_count"] = stress_scores.len()
+            if not stress_scores.is_empty():
+                # The existing metric name represents the mean; min and max complete the summary.
+                metrics["stress_score"] = float(stress_scores.mean())
+                metrics["stress_score_min"] = float(stress_scores.min())
+                metrics["stress_score_max"] = float(stress_scores.max())
+
         logger.info("Starting wandb logging")
-        wandb.init(project=self.project_name, reinit=True)
-        # Chiude sempre la run, anche se wandb rifiuta i dati durante il logging.
+        # Start a new run, finishing any previous run, without deprecated options.
+        run = wandb.init(project=self.project_name, reinit="finish_previous")
+        # Avoid payloads proportional to the dataset size and always finish the created run.
         try:
-            wandb.log(df.to_dict(as_series=False))
+            run.log(metrics)
         finally:
-            wandb.finish()
+            run.finish()
         logger.info("wandb logging completed")

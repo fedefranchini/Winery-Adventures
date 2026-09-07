@@ -36,7 +36,7 @@ def test_winery_pipeline_end_to_end(tmp_path, monkey_joblib, monkey_wandb_run, s
     # Should have columns from transformations + HPC
     for col in ["avg_pH_per_tank", "stress_score"]:
         assert col in df_result.columns, f"Missing {col} in final output"
-    # We won't do an exact numeric check, but you could if you wanted to.
+    assert df_result.get_column("stress_score").is_finite().all()
     assert df_result.shape[0] == 9
 
     parallel_mock, delayed_mock = monkey_joblib
@@ -60,17 +60,18 @@ def test_winery_pipeline_without_tank_info(tmp_path, monkey_joblib, monkey_wandb
         output_csv=str(output_csv),
         project_name="AcceptanceTestNoTankInfo",
     )
-    # Anche senza tank_info, il logging su wandb deve comunque avvenire
+    # Even without tank_info, wandb logging must still take place
     assert any("stress_score" in d for d in monkey_wandb_run.logs)
 
     df_result = pl.read_csv(output_csv)
     for col in ["avg_pH_per_tank", "stress_score"]:
         assert col in df_result.columns, f"Missing {col} in final output"
+    assert df_result.get_column("stress_score").is_finite().all()
 
-    # Senza tank_info non esiste il conteggio per varietà d'uva
+    # Without tank_info, there is no reading count per grape variety
     assert "grape_variety_num_readings" not in df_result.columns
 
-    # Senza tank_info non c'è nessun join:le righe restano quelle originali
+    # Without tank_info, there is no join: the original rows are preserved
     assert df_result.shape[0] == 3
 
     parallel_mock, delayed_mock = monkey_joblib

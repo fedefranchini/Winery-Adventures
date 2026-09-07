@@ -2,6 +2,7 @@ import polars as pl
 import pytest
 
 from winery_adventures.transformations import WineryTransformer
+from winery_adventures.validation import DataValidationError
 
 
 def test_transformer_analyze_data(sensors_df, tank_info_df_grape_variety_split):
@@ -47,6 +48,13 @@ def test_add_num_readings_per_grape_variety(sensors_df, tank_info_df_grape_varie
     transformer = WineryTransformer(None)
     with pytest.raises(AttributeError):
         transformer.add_num_readings_per_grape_variety(sensors_df)
+
+
+def test_add_num_readings_rejects_unknown_tank(sensors_df, tank_info_df_grape_variety_split):
+    incomplete_tank_info = tank_info_df_grape_variety_split.filter(pl.col("tank_id") == 1)
+
+    with pytest.raises(DataValidationError, match="missing tank_id values: 2"):
+        WineryTransformer(incomplete_tank_info).add_num_readings_per_grape_variety(sensors_df)
 
 
 def test_standard_temperature():
