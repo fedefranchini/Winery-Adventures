@@ -1,6 +1,6 @@
 # WA-18 / WA-19 — Benchmark and optimization report
 
-The measurements from September 6, 2026 verify the current pipeline and
+The measurements from September 6, 2026 verify the pipeline version described below and
 isolate the effect of Numba's parallel compilation. The raw results are
 kept in the [pipeline-wa22.json](benchmark-results/pipeline-wa22.json) and
 [kernels-wa22.json](benchmark-results/kernels-wa22.json) files.
@@ -13,6 +13,13 @@ changes. The base commit alone does not identify the measured code: the
 comparison JSON also keeps the SHA-256 fingerprints of the sources
 involved. The fingerprints are of local bytes, so they include line
 endings.
+
+The recorded fingerprints refer to the source files before the English
+translation of comments, docstrings, and descriptive text. They therefore
+do not match the current source files, although the computational logic
+and datasets are unchanged. The JSON files retain the original hashes and
+measurements as evidence of that run; they are not measurements of the
+translated revision.
 
 | Item | Value |
 |---|---|
