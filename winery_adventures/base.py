@@ -36,7 +36,7 @@ class BaseWineryAnalyzer(ABC):
 # 1. It does not define analyze_data.
 #    It inherits the abstract method and remains abstract: Python rejects
 #    instantiation with TypeError. The error occurs where the analyzer is
-#    constructed (main.py), not where it is used, therefore before reading the TSV files.
+#    constructed (main.py), after reading the TSV files and before running the pipeline.
 # 2. It defines analyze_data but delegates with super().analyze_data(df).
 #    The object is created successfully, and the error occurs only when the
 #    method is called, as NotImplementedError. This is the only case that executes

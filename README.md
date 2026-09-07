@@ -144,6 +144,20 @@ The WBS and Definition of Done are described in the
 are available in the repository's
 [Pull Requests section](https://github.com/fedefranchini/Winery-Adventures/pulls).
 
+## Team
+
+| Name | GitHub |
+|---|---|
+| Federico Marras | [@MarrasFederico](https://github.com/MarrasFederico) |
+| Federico Franchini | [@FedeFranchini](https://github.com/FedeFranchini) |
+
+## Acknowledgements
+
+This project was developed by Federico Marras and Federico Franchini for
+the Software Engineering course in 2026, as part of the degree programme
+in Applied Computer Science and Data Analytics (IADA) at the University
+of Cagliari.
+
 ## License
 
 The project is distributed under the terms specified in [LICENSE](LICENSE).
