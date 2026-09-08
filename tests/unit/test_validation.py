@@ -4,6 +4,7 @@ import pytest
 from winery_adventures.validation import (
     DataValidationError,
     validate_sensors,
+    validate_tank_coverage,
     validate_tank_info,
 )
 
@@ -137,3 +138,22 @@ def test_validate_tank_info_rejects_empty_variety_items(tank_info_df):
 
     with pytest.raises(DataValidationError, match="empty grape_variety item"):
         validate_tank_info(invalid_df)
+
+
+def test_validate_tank_coverage_accepts_all_covered(sensors_df, tank_info_df):
+    validate_tank_coverage(sensors_df, tank_info_df)
+
+
+def test_validate_tank_coverage_allows_extra_tank_info(sensors_df, tank_info_df):
+    extra_tank_info = pl.concat(
+        [tank_info_df, pl.DataFrame({"tank_id": [99], "capacity_liters": [1000], "grape_variety": ["Syrah"]})]
+    )
+    validate_tank_coverage(sensors_df, extra_tank_info)
+
+
+def test_validate_tank_coverage_rejects_missing_tank_id(sensors_df, tank_info_df):
+    sensor_with_unknown = sensors_df.with_columns(
+        pl.when(pl.col("tank_id") == 2).then(pl.lit(99)).otherwise(pl.col("tank_id")).alias("tank_id")
+    )
+    with pytest.raises(DataValidationError, match="Tank information is missing tank_id values: 99"):
+        validate_tank_coverage(sensor_with_unknown, tank_info_df)

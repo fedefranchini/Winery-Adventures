@@ -24,9 +24,10 @@ from data_generator import generate_sensor_data, generate_tank_info, generate_va
 from winery_adventures.computations import WineryHPCComputations, pairwise_stress_function
 from winery_adventures.io import read_sensors, read_tank_info, write_output
 from winery_adventures.transformations import WineryTransformer
+from winery_adventures.validation import validate_tank_coverage
 
 ResultT = TypeVar("ResultT")
-PHASES = ("input_io", "transformations", "hpc", "output_io")
+PHASES = ("input_io", "preflight", "transformations", "hpc", "output_io")
 
 
 def _measure(function: Callable[[], ResultT]) -> tuple[ResultT, float, float]:
@@ -112,34 +113,55 @@ def _load_inputs(sensor_path: Path, tank_info_path: Path) -> tuple[pl.DataFrame,
     return sensors, tank_info
 
 
-def _run_iteration(sensor_path: Path, tank_info_path: Path, output_path: Path) -> dict[str, Any]:
-    """Separately measure I/O, transformations, HPC computation, and writing."""
+def _run_iteration(
+    sensor_path: Path,
+    tank_info_path: Path,
+    output_path: Path,
+    order: str = "hpc-first",
+) -> dict[str, Any]:
+    """Separately measure I/O, preflight validation, transformations, HPC, and writing in the given order."""
     iteration_started_at = time.perf_counter()
 
     # Each phase records its time and peak memory to identify the bottleneck.
     inputs, input_seconds, input_peak_mib = _measure(lambda: _load_inputs(sensor_path, tank_info_path))
     sensors, tank_info = inputs
 
-    transformed, transformation_seconds, transformation_peak_mib = _measure(
-        lambda: WineryTransformer(tank_info).analyze_data(sensors)
-    )
-    computed, hpc_seconds, hpc_peak_mib = _measure(lambda: WineryHPCComputations().analyze_data(transformed))
+    _, preflight_seconds, preflight_peak_mib = _measure(lambda: validate_tank_coverage(sensors, tank_info))
+
+    if order == "hpc-first":
+        computed, hpc_seconds, hpc_peak_mib = _measure(lambda: WineryHPCComputations().analyze_data(sensors))
+        transformed, transformation_seconds, transformation_peak_mib = _measure(
+            lambda: WineryTransformer(tank_info).analyze_data(computed)
+        )
+        final_df = transformed
+    elif order == "transformer-first":
+        transformed, transformation_seconds, transformation_peak_mib = _measure(
+            lambda: WineryTransformer(tank_info).analyze_data(sensors)
+        )
+        computed, hpc_seconds, hpc_peak_mib = _measure(lambda: WineryHPCComputations().analyze_data(transformed))
+        final_df = computed
+    else:
+        raise ValueError(f"Invalid order: {order}. Expected 'hpc-first' or 'transformer-first'")
 
     # A performance measurement is valid only if the computation produces
     # numerically usable scores, even when quantities are missing.
-    stress_scores = computed.get_column("stress_score")
+    stress_scores = final_df.get_column("stress_score")
     stress_scores_finite = stress_scores.null_count() == 0 and stress_scores.is_finite().all()
     if not stress_scores_finite:
         raise RuntimeError("Benchmark produced non-finite stress scores")
 
-    _, output_seconds, output_peak_mib = _measure(lambda: write_output(computed, str(output_path)))
+    _, output_seconds, output_peak_mib = _measure(lambda: write_output(final_df, str(output_path)))
 
     return {
         "total_seconds": time.perf_counter() - iteration_started_at,
-        "output_rows": computed.height,
+        "output_rows": final_df.height,
         "stress_scores_finite": stress_scores_finite,
         "phases": {
             "input_io": {"seconds": input_seconds, "python_peak_mib": input_peak_mib},
+            "preflight": {
+                "seconds": preflight_seconds,
+                "python_peak_mib": preflight_peak_mib,
+            },
             "transformations": {
                 "seconds": transformation_seconds,
                 "python_peak_mib": transformation_peak_mib,
@@ -178,6 +200,7 @@ def run_benchmark(
     num_readings: int = 100_000,
     repetitions: int = 3,
     seed: int = 42,
+    order: str = "hpc-first",
 ) -> dict[str, Any]:
     """Generate the inputs and run a repeatable baseline of the pipeline.
 
@@ -186,6 +209,7 @@ def run_benchmark(
         num_readings: positive number of readings generated.
         repetitions: positive number of measured iterations.
         seed: seed shared by the generation of the two inputs.
+        order: analyzer order, either 'hpc-first' (production) or 'transformer-first' (legacy).
 
     Returns:
         Environment, parameters, input fingerprints, individual
@@ -193,12 +217,14 @@ def run_benchmark(
 
     Raises:
         ValueError: if a size or the number of repetitions is not positive,
-            or if the generated data cannot be processed.
+            or if order is not 'hpc-first' or 'transformer-first'.
         RuntimeError: if an iteration produces null or non-finite scores.
         OSError: if a temporary file cannot be read or written.
     """
     if num_tanks <= 0 or num_readings <= 0 or repetitions <= 0:
         raise ValueError("num_tanks, num_readings and repetitions must be positive")
+    if order not in ("hpc-first", "transformer-first"):
+        raise ValueError(f"Invalid order: {order}. Expected 'hpc-first' or 'transformer-first'")
 
     # The first call triggers Numba compilation outside the measured time window.
     # Polars returns read-only arrays: Numba treats them as a distinct signature,
@@ -219,7 +245,24 @@ def run_benchmark(
         # Each repetition reuses the same inputs to make the measurements comparable.
         for repetition in range(repetitions):
             output_path = data_dir / f"result-{repetition + 1}.csv"
-            iterations.append(_run_iteration(dataset["sensor_path"], dataset["tank_info_path"], output_path))
+            iterations.append(
+                _run_iteration(
+                    dataset["sensor_path"],
+                    dataset["tank_info_path"],
+                    output_path,
+                    order=order,
+                )
+            )
+
+    source_root = Path(__file__).resolve().parents[1]
+    sources = [
+        "benchmarks/benchmark_pipeline.py",
+        "data_generator.py",
+        "winery_adventures/computations.py",
+        "winery_adventures/transformations.py",
+        "winery_adventures/io.py",
+        "winery_adventures/validation.py",
+    ]
 
     return {
         "environment": {
@@ -230,11 +273,13 @@ def run_benchmark(
             "numba": numba.__version__,
             "joblib": joblib.__version__,
         },
+        "source_sha256": {name: _sha256(source_root / name) for name in sources},
         "parameters": {
             "num_tanks": num_tanks,
             "num_readings": num_readings,
             "repetitions": repetitions,
             "seed": seed,
+            "order": order,
         },
         "dataset": {
             "generation_seconds": dataset["generation_seconds"],
@@ -258,6 +303,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repetitions", type=int, default=3, help="Number of measurements.")
     parser.add_argument("--seed", type=int, default=42, help="Seed for the reproducible dataset.")
     parser.add_argument(
+        "--order",
+        type=str,
+        choices=["hpc-first", "transformer-first"],
+        default="hpc-first",
+        help="Order of pipeline analyzers: 'hpc-first' (production) or 'transformer-first' (legacy).",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("benchmark-results.json"),
@@ -274,6 +326,7 @@ def main() -> None:
         num_readings=args.readings,
         repetitions=args.repetitions,
         seed=args.seed,
+        order=args.order,
     )
     # The JSON format preserves both individual measurements and the aggregated summary.
     args.output.write_text(json.dumps(results, indent=2), encoding="utf-8")

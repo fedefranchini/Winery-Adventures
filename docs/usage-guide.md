@@ -23,8 +23,8 @@ run_full_pipeline(
 The function performs the following operations:
 
 1. reads the two inputs in parallel when `tank_info_csv` is set;
-2. validates the dataset contracts;
-3. applies transformations and the HPC computation;
+2. validates dataset contracts and verifies tank coverage;
+3. applies the HPC computation and transformations;
 4. logs a summary to Weights & Biases (W&B) if `project_name` is set;
 5. writes the result as a comma-separated CSV.
 
@@ -36,10 +36,11 @@ The parent directory of `output_csv` must exist. The example uses the
 With the `tank_info_csv` parameter set, the pipeline associates readings
 with tank information via an inner join. The tank information must describe
 every tank present in the readings: a `tank_id` observed but missing from
-`tank_info` stops execution with a `DataValidationError` that reports its
-value. The join can therefore only discard tanks from the tank information
-that have no readings. If a tank contains several grape varieties, each
-reading is replicated once per variety.
+`tank_info` stops execution during preflight validation with a
+`DataValidationError` that reports its value before running the HPC
+computation. The join can therefore only discard tanks from the tank
+information that have no readings. If a tank contains several grape
+varieties, each reading is replicated once per variety.
 
 ### Running without `tank_info`
 
@@ -148,7 +149,7 @@ scores.
 ## Output contract
 
 The file indicated by `output_csv` preserves the sensor columns and adds
-the columns produced by the transformations and the HPC computation. When
+the columns produced by the HPC computation and transformations. When
 the tank information is provided, it also includes the data obtained from
 the join.
 

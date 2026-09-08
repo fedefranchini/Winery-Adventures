@@ -16,6 +16,12 @@ def pairwise_stress_function(
 ) -> float:
     """Compute the average stress by comparing every pair of readings.
 
+    Equivalence between evaluating this formula before versus after grape variety
+    expansion is mathematical within floating-point tolerances (not bitwise identical),
+    as differing summation order and size affect floating-point rounding. Computing
+    pairwise stress early on unexpanded sensor readings avoids expansion-induced
+    accumulation overflow in intermediate sums.
+
     Args:
         pH_vals: pH values ordered by reading.
         temp_vals: temperatures ordered the same way as the pH values.

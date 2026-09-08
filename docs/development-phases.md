@@ -69,8 +69,8 @@ components the rest of the system depends on.
   checks on Pull Requests.
 - **WA-06 — BaseWineryAnalyzer:** implement the abstract class and the
   common `analyze_data` contract.
-- **WA-07 — I/O:** implement TSV reading, initial validation, the optional
-  join with tank information, and output writing.
+- **WA-07 — I/O:** implement TSV reading, initial validation, and
+  output writing.
 
 ### What must be done
 
@@ -97,8 +97,9 @@ orchestration required by the project's tests.
 ### Transformation activities
 
 - **WA-08:** compute the average pH and the number of readings per tank.
-- **WA-09:** expand the varieties associated with each tank and compute
-  the number of readings per grape variety.
+- **WA-09:** join tank information (when provided), expand the varieties
+  associated with each tank, and compute the number of readings per grape
+  variety.
 - **WA-10:** compute the deviation from the standard temperature of 26 °C
   and the version scaled to 1,000 liters when the quantity is available.
 

@@ -16,7 +16,7 @@ class BaseWineryAnalyzer(ABC):
             df: readings to process.
 
         Returns:
-            A new DataFrame containing the analysis result.
+            A DataFrame containing the analysis result; it may be the input object.
 
         Raises:
             NotImplementedError: only if a subclass implements the method

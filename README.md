@@ -92,8 +92,9 @@ Winery-Adventures/
 - `WineryPipeline` runs analyzers sequentially and handles W&B logging.
 - The `io` module reads TSV inputs, initiates their validation, and writes
   CSV output.
-- `run_full_pipeline` coordinates concurrent reading, transformations,
-  computation, logging, and writing.
+- `run_full_pipeline` coordinates concurrent reading, validates tank
+  coverage before running HPC on unexpanded readings, then executes the
+  transformer, logging, and writing with unchanged schema and column order.
 
 The class, sequence, and use case diagrams are described in the
 [architecture documentation](docs/architecture.md).

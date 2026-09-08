@@ -1,0 +1,91 @@
+<mxfile host="app.diagrams.net" scale="10" border="0">
+  <diagram name="Page-1" id="y0_0fvjPXgCOA90EFo2C">
+    <mxGraphModel dx="1654" dy="878" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-56" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#A8DADC;strokeColor=#457B9D;fontColor=#1D3557;" value="&lt;div style=&quot;font-size:10px;font-weight:normal&quot;&gt;&amp;lt;&amp;lt;abstract&amp;gt;&amp;gt;&lt;/div&gt;&lt;i&gt;BaseWineryAnalyzer&lt;/i&gt;" vertex="1">
+          <mxGeometry height="100" width="290" x="330" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-57" parent="7XgC7e3A4ybVnaBZXlDc-56" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingTop=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontColor=#1D3557;" value="+ &lt;i&gt;analyze_data&lt;/i&gt;(df: pl.DataFrame): pl.DataFrame {abstract}" vertex="1">
+          <mxGeometry height="65" width="290" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-58" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#A8DADC;strokeColor=#457B9D;fontColor=#1D3557;" value="&lt;div style=&quot;font-size:10px;font-weight:normal&quot;&gt;&amp;lt;&amp;lt;Protocol&amp;gt;&amp;gt;&lt;/div&gt;WineryAnalyzer" vertex="1">
+          <mxGeometry height="100" width="270" x="675" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-59" parent="7XgC7e3A4ybVnaBZXlDc-58" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingTop=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontColor=#1D3557;" value="+ analyze_data(df: pl.DataFrame): pl.DataFrame" vertex="1">
+          <mxGeometry height="65" width="270" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-60" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#A8DADC;strokeColor=#457B9D;fontColor=#1D3557;" value="WineryTransformer" vertex="1">
+          <mxGeometry height="135" width="350" x="45" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-61" parent="7XgC7e3A4ybVnaBZXlDc-60" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingTop=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontColor=#1D3557;" value="- tank_info: pl.DataFrame | None&lt;br&gt;+ STANDARD_TEMPERATURE: float = 26.0&lt;br&gt;&lt;br&gt;+ analyze_data(df: pl.DataFrame): pl.DataFrame" vertex="1">
+          <mxGeometry height="105" width="350" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-62" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#A8DADC;strokeColor=#457B9D;fontColor=#1D3557;" value="WineryHPCComputations" vertex="1">
+          <mxGeometry height="95" width="300" x="645" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-63" parent="7XgC7e3A4ybVnaBZXlDc-62" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingTop=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontColor=#1D3557;" value="+ analyze_data(df: pl.DataFrame): pl.DataFrame" vertex="1">
+          <mxGeometry height="65" width="300" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-64" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#A8DADC;strokeColor=#457B9D;fontColor=#1D3557;" value="WineryPipeline" vertex="1">
+          <mxGeometry height="150" width="360" x="365" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-65" parent="7XgC7e3A4ybVnaBZXlDc-64" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingTop=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontColor=#1D3557;" value="- analyzers: Sequence&amp;lt;WineryAnalyzer&amp;gt;&lt;br&gt;- project_name: str | None&lt;br&gt;&lt;br&gt;+ run(df: pl.DataFrame, log_to_wandb: bool = False): pl.DataFrame&lt;br&gt;+ log_to_wandb(df: pl.DataFrame): None" vertex="1">
+          <mxGeometry height="120" width="360" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-66" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#A8DADC;strokeColor=#457B9D;fontColor=#1D3557;" value="&lt;div style=&quot;font-size:10px;font-weight:normal&quot;&gt;&amp;lt;&amp;lt;exception&amp;gt;&amp;gt;&lt;/div&gt;DataValidationError" vertex="1">
+          <mxGeometry height="80" width="260" x="70" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-67" parent="7XgC7e3A4ybVnaBZXlDc-66" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingTop=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontColor=#1D3557;" value="extends ValueError" vertex="1">
+          <mxGeometry height="40" width="260" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-68" edge="1" parent="1" source="7XgC7e3A4ybVnaBZXlDc-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;endSize=12;labelBackgroundColor=none;strokeColor=#457B9D;fontColor=default;" target="7XgC7e3A4ybVnaBZXlDc-56" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="215" y="180" />
+              <mxPoint x="475" y="180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-69" edge="1" parent="1" source="7XgC7e3A4ybVnaBZXlDc-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;endSize=12;labelBackgroundColor=none;strokeColor=#457B9D;fontColor=default;" target="7XgC7e3A4ybVnaBZXlDc-56" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="795" y="185" />
+              <mxPoint x="545" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-70" edge="1" parent="1" source="7XgC7e3A4ybVnaBZXlDc-64" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;startArrow=none;labelBackgroundColor=none;strokeColor=#457B9D;fontColor=default;" target="7XgC7e3A4ybVnaBZXlDc-58" value="analyzers">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="970" y="530" />
+              <mxPoint x="970" y="145" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-71" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=10;labelBackgroundColor=none;fontColor=#1D3557;" value="0..*" vertex="1">
+          <mxGeometry height="18" width="38" x="930" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-72" edge="1" parent="1" source="7XgC7e3A4ybVnaBZXlDc-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;endFill=0;endSize=10;fontSize=10;labelBackgroundColor=none;strokeColor=#457B9D;fontColor=default;" target="7XgC7e3A4ybVnaBZXlDc-58" value="&amp;lt;&amp;lt;structural typing&amp;gt;&amp;gt;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="440" y="330" />
+              <mxPoint x="600" y="330" />
+              <mxPoint x="600" y="145" />
+              <mxPoint x="765" y="145" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7XgC7e3A4ybVnaBZXlDc-73" edge="1" parent="1" source="7XgC7e3A4ybVnaBZXlDc-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;endFill=0;endSize=10;fontSize=10;labelBackgroundColor=none;strokeColor=#457B9D;fontColor=default;" target="7XgC7e3A4ybVnaBZXlDc-58" value="&amp;lt;&amp;lt;structural typing&amp;gt;&amp;gt;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="875" y="225" />
+              <mxPoint x="875" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

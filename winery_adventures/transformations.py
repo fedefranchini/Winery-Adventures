@@ -3,7 +3,7 @@
 import polars as pl
 
 from winery_adventures.base import BaseWineryAnalyzer
-from winery_adventures.validation import DataValidationError
+from winery_adventures.validation import validate_tank_coverage
 
 
 class WineryTransformer(BaseWineryAnalyzer):
@@ -35,11 +35,16 @@ class WineryTransformer(BaseWineryAnalyzer):
                 the tank information.
             polars.exceptions.ColumnNotFoundError: if a required column is missing.
         """
+        has_stress = "stress_score" in df.columns
         df = self.add_avg_ph_per_tank(df)
         df = self.add_num_readings_per_tank(df)
         if self.tank_info is not None:
             df = self.add_num_readings_per_grape_variety(df)
-        return self.add_temperature_deviation(df)
+        df = self.add_temperature_deviation(df)
+        if has_stress:
+            columns_without_stress = [c for c in df.columns if c != "stress_score"]
+            df = df.select([*columns_without_stress, "stress_score"])
+        return df
 
     def add_avg_ph_per_tank(self, df: pl.DataFrame) -> pl.DataFrame:
         """Add the tank's average pH to every reading.
@@ -90,12 +95,7 @@ class WineryTransformer(BaseWineryAnalyzer):
             raise AttributeError("tank_info is required for grape variety analysis")
 
         # Check tank information coverage before the inner join can discard readings.
-        sensor_tank_ids = set(df.get_column("tank_id").to_list())
-        known_tank_ids = set(self.tank_info.get_column("tank_id").to_list())
-        missing_tank_ids = sorted(sensor_tank_ids.difference(known_tank_ids))
-        if missing_tank_ids:
-            missing_values = ", ".join(str(tank_id) for tank_id in missing_tank_ids)
-            raise DataValidationError(f"Tank information is missing tank_id values: {missing_values}")
+        validate_tank_coverage(df, self.tank_info)
 
         # Associate each reading with the information for its tank.
         df = self.tank_info.join(df, on="tank_id", how="inner")

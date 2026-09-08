@@ -35,9 +35,9 @@ of cards:
 | WA-04 | Set up the package, reproducible dependencies, formatter, linter, and Pytest | MarrasFederico | 5 | High | Architecture | — | Ready |
 | WA-05 | Set up CI for lint, unit tests, acceptance tests, and PR status | FedeFranchini | 3 | High | Testing | WA-04 | Backlog |
 | WA-06 | Implement `BaseWineryAnalyzer` and the abstract contracts | MarrasFederico | 2 | High | Architecture | WA-03, WA-04 | Backlog |
-| WA-07 | Implement TSV loading, the optional join, and output writing | FedeFranchini | 5 | High | Backend | WA-02, WA-04 | Backlog |
+| WA-07 | Implement TSV loading, initial validation, and output writing | FedeFranchini | 5 | High | Backend | WA-02, WA-04 | Backlog |
 | WA-08 | Implement average pH and reading count per tank | MarrasFederico | 3 | High | Backend | WA-06 | Backlog |
-| WA-09 | Implement expansion and reading count per grape variety | FedeFranchini | 5 | High | Data | WA-06, WA-07 | Backlog |
+| WA-09 | Implement tank information join, expansion, and reading count per grape variety | FedeFranchini | 5 | High | Data | WA-06, WA-07 | Backlog |
 | WA-10 | Implement unscaled and scaled temperature deviation, including nulls | MarrasFederico | 3 | High | Backend | WA-02, WA-06 | Backlog |
 | WA-11 | Implement the pairwise formula and the HPC analyzer compiled with Numba | MarrasFederico | 8 | High | Backend | WA-02, WA-06 | Backlog |
 | WA-12 | Implement the sequential pipeline and Weights & Biases logging | FedeFranchini | 8 | High | Backend | WA-06, WA-08–WA-11 | Backlog |

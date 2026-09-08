@@ -18,7 +18,7 @@ from winery_adventures.transformations import WineryTransformer
 
 
 def compare_kernels(num_tanks: int = 100, num_readings: int = 100_000, repetitions: int = 5, seed: int = 42) -> dict:
-    """Measure two compilations of the same formula on the same arrays.
+    """Measure two compilations of the same formula on unexpanded sensor arrays.
 
     Args:
         num_tanks: number of tanks generated, positive.
@@ -46,8 +46,9 @@ def compare_kernels(num_tanks: int = 100, num_readings: int = 100_000, repetitio
         sensors, tanks = _load_inputs(dataset["sensor_path"], dataset["tank_info_path"])
         transformed = WineryTransformer(tanks).analyze_data(sensors)
 
+    # In production, pairwise stress is computed on unexpanded sensor readings before variety expansion.
     groups = []
-    for tank in transformed.partition_by("tank_id", maintain_order=True):
+    for tank in sensors.partition_by("tank_id", maintain_order=True):
         complete = tank.drop_nulls(subset=["quantity_liters"])
         groups.append(
             tuple(complete.get_column(name).cast(pl.Float64).to_numpy() for name in ("pH", "temp", "quantity_liters"))
@@ -104,9 +105,13 @@ def compare_kernels(num_tanks: int = 100, num_readings: int = 100_000, repetitio
         "speedup": medians["serial"] / medians["parallel"],
         "max_absolute_error": float(np.max(np.abs(actual - expected))),
         "scores_finite": True,
-        "method": "Same current formula and complete readings; only Numba parallel compilation differs. "
-        "Times include kernel calls and collection of scores, excluding data preparation and compilation. "
-        "This is not a benchmark of the historical repository revision.",
+        "method": (
+            "Same current formula and complete unexpanded readings; only Numba parallel compilation differs. "
+            "Times include kernel calls and collection of scores, excluding data preparation and compilation. "
+            "output_rows reports the total rows produced by the full pipeline after variety expansion, "
+            "while computable_rows counts the valid unexpanded sensor readings evaluated by the kernels. "
+            "This is not a benchmark of the historical repository revision."
+        ),
     }
 
 

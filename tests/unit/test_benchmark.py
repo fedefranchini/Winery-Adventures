@@ -12,12 +12,21 @@ def test_benchmark_produces_repeatable_dataset_and_phase_metrics():
     assert first_result["dataset"]["tank_info_sha256"] == second_result["dataset"]["tank_info_sha256"]
     assert len(first_result["iterations"]) == 2
 
+    assert "source_sha256" in first_result
+    assert "benchmarks/benchmark_pipeline.py" in first_result["source_sha256"]
+    assert "winery_adventures/validation.py" in first_result["source_sha256"]
+    assert all(len(sha) == 64 for sha in first_result["source_sha256"].values())
+
+    assert "preflight" in PHASES
+    assert "preflight" in first_result["summary"]["phases"]
+
     # Each reading is expanded into the three varieties associated with its tank.
     for iteration in first_result["iterations"]:
         assert iteration["output_rows"] == 36
         assert iteration["stress_scores_finite"] is True
         assert iteration["total_seconds"] >= 0
         assert set(iteration["phases"]) == set(PHASES)
+        assert "preflight" in iteration["phases"]
         assert all(metrics["seconds"] >= 0 for metrics in iteration["phases"].values())
         assert all(metrics["python_peak_mib"] >= 0 for metrics in iteration["phases"].values())
 
@@ -30,3 +39,19 @@ def test_benchmark_rejects_non_positive_parameters(num_tanks, num_readings, repe
     # Prevent empty benchmarks that would produce meaningless measurements.
     with pytest.raises(ValueError, match="must be positive"):
         run_benchmark(num_tanks=num_tanks, num_readings=num_readings, repetitions=repetitions)
+
+
+@pytest.mark.parametrize("order", ["hpc-first", "transformer-first"])
+def test_benchmark_supports_both_orders(order):
+    result = run_benchmark(num_tanks=2, num_readings=12, repetitions=1, seed=123, order=order)
+    assert result["parameters"]["order"] == order
+    assert len(result["iterations"]) == 1
+    assert result["iterations"][0]["output_rows"] == 36
+    assert result["iterations"][0]["stress_scores_finite"] is True
+    assert "preflight" in result["iterations"][0]["phases"]
+    assert result["iterations"][0]["phases"]["preflight"]["seconds"] >= 0
+
+
+def test_benchmark_rejects_invalid_order():
+    with pytest.raises(ValueError, match="Expected 'hpc-first' or 'transformer-first'"):
+        run_benchmark(num_tanks=2, num_readings=12, repetitions=1, seed=123, order="invalid-order")

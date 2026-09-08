@@ -198,12 +198,21 @@ For the measurement expected on 100,000 readings:
 python -m benchmarks.benchmark_pipeline --tanks 100 --readings 100000 --repetitions 3 --seed 42 --output benchmark-results.json
 ```
 
-The JSON file contains the environment, parameters, input fingerprints,
-measurements of the individual iterations, and a per-phase summary. The
-first run may take longer because the dataset is regenerated from scratch.
+The script accepts `--order` to select the analyzer execution order:
+`hpc-first` (the production default, running HPC before grape variety
+expansion) and `transformer-first` (the legacy order kept for the
+controlled before/after comparison).
+
+The JSON file contains the environment, parameters, SHA-256 fingerprints
+of the inputs and benchmark sources, measurements of the individual
+iterations, and a per-phase summary covering preflight tank-coverage
+validation alongside input reading, transformations, HPC, and output
+writing. The first run may take longer because the dataset is
+regenerated from scratch.
 
 Methodology, collected measurements, and a controlled comparison between
-serial and parallel compilation of the current formula are reported in the
+serial and parallel compilation of the current formula (run via
+`benchmarks.compare_kernels`) are reported in the
 [benchmark report](benchmark-report.md).
 
 ## Local verification sequence
