@@ -198,13 +198,52 @@ For the measurement expected on 100,000 readings:
 python -m benchmarks.benchmark_pipeline --tanks 100 --readings 100000 --repetitions 3 --seed 42 --output benchmark-results.json
 ```
 
-The JSON file contains the environment, parameters, input fingerprints,
-measurements of the individual iterations, and a per-phase summary. The
-first run may take longer because the dataset is regenerated from scratch.
+The script accepts `--order` to select the analyzer execution order:
+`hpc-first` (the production default, running HPC before grape variety
+expansion) and `transformer-first` (the legacy order kept for the
+controlled before/after comparison).
+
+The JSON file contains the environment, parameters, SHA-256 fingerprints
+of the inputs and benchmark sources, measurements of the individual
+iterations, and a per-phase summary covering preflight tank-coverage
+validation alongside input reading, transformations, HPC, and output
+writing. The first run may take longer because the dataset is
+regenerated from scratch.
 
 Methodology, collected measurements, and a controlled comparison between
-serial and parallel compilation of the current formula are reported in the
+serial and parallel compilation of the current formula (run via
+`benchmarks.compare_kernels`) are reported in the
 [benchmark report](benchmark-report.md).
+
+### Optional performance presentation tools
+
+`python -m pip install -e ".[plots]"` installs Matplotlib for PNG generation in Python.
+The development extra already includes it, so CI exercises the plotting tests.
+The pipeline and JSON benchmark commands do not need Matplotlib.
+
+Use `python -m benchmarks.compare_cache --repetitions 3 --output cache-results.json`
+to measure actual Numba disk-cache reuse across fresh Python processes. Existing
+output files are rejected to preserve previous evidence. The experiment uses its
+own temporary cache and does not clear the application's cache.
+
+For a bounded three-variant kernel comparison, run:
+
+```bash
+python -m benchmarks.compare_kernels --tanks 20 --readings 10000 --repetitions 6 --include-python --output kernels-new.json
+python -m benchmarks.compare_joblib --tanks 100 --readings 10000 --repetitions 4 --jobs 1 2 4 -1 --output joblib-new.json
+```
+
+Run measurements sequentially, without tests or other CPU-intensive jobs in the
+background. Both commands reject existing output files. The Python baseline is
+limited to five million valid ordered pairs; reduce readings or increase tanks
+for a smaller workload. Joblib starts fresh interpreters for each configuration
+and repetition, then measures first and repeat generator calls. It does not
+write or replace the project's datasets. Available-worker measurements may
+temporarily use all CPUs.
+
+The [benchmark report](benchmark-report.md)
+contains the chart-generation and W&B import commands. Upload is explicit and
+separate from measurement; tests mock W&B and never require credentials.
 
 ## Local verification sequence
 

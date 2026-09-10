@@ -129,3 +129,21 @@ def validate_tank_info(df: pl.DataFrame) -> None:
 
     if df.get_column("tank_id").n_unique() != df.height:
         raise DataValidationError("Tank information contains duplicate tank_id values")
+
+
+def validate_tank_coverage(sensors_df: pl.DataFrame, tank_info_df: pl.DataFrame) -> None:
+    """Check that all tanks present in the sensor readings exist in tank info.
+
+    Args:
+        sensors_df: sensor readings containing ``tank_id``.
+        tank_info_df: tank information containing ``tank_id``.
+
+    Raises:
+        DataValidationError: if any tank in the readings is missing from tank info.
+    """
+    sensor_tank_ids = set(sensors_df.get_column("tank_id").to_list())
+    known_tank_ids = set(tank_info_df.get_column("tank_id").to_list())
+    missing_tank_ids = sorted(sensor_tank_ids.difference(known_tank_ids))
+    if missing_tank_ids:
+        missing_values = ", ".join(str(tank_id) for tank_id in missing_tank_ids)
+        raise DataValidationError(f"Tank information is missing tank_id values: {missing_values}")

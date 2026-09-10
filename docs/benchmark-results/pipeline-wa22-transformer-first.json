@@ -1,0 +1,205 @@
+{
+  "environment": {
+    "python": "3.11.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "git_revision": "d8c4b82b5c1ba6dd3b8f926db2743215db4748a1",
+    "polars": "1.44.1",
+    "numba": "0.67.0",
+    "joblib": "1.5.3"
+  },
+  "source_sha256": {
+    "benchmarks/benchmark_pipeline.py": "9903f0aed6fdead2fca8533e8d968c77aa7061cae2a53a2399b24e8bc32d3583",
+    "data_generator.py": "41e13db335b8e844e6cec7b452c7861d5447579fc0b3e5c5a439b307d003dec5",
+    "winery_adventures/computations.py": "b897e32748ae90ae6ab1544ccee44a1c6375a1e174bca96c0d9ba6af76e9d615",
+    "winery_adventures/transformations.py": "d87c7812dfc14de6e0373cb43db71e78a7847ab3f5af8175fea0bc22ea7cb0e3",
+    "winery_adventures/io.py": "9c3b224acecac9a311e8278e5bfc4a1c1a853e3aa77a6652413f727cf90e9e4a",
+    "winery_adventures/validation.py": "95741a920c22259cb7c59e4ed91041d295876fb23355b65480126d71225d6e30"
+  },
+  "parameters": {
+    "num_tanks": 100,
+    "num_readings": 100000,
+    "repetitions": 5,
+    "seed": 42,
+    "order": "transformer-first"
+  },
+  "dataset": {
+    "generation_seconds": 3.629608000002918,
+    "sensor_sha256": "fdd4518535ce9dd98c4e034cb1f9ae5464771549ed7c7433bd10b8384d80d557",
+    "tank_info_sha256": "27b9dfe8c3ddf683a6b19499b3fbca38b158059b36e9dfdb96e5933cd37d0de4"
+  },
+  "iterations": [
+    {
+      "total_seconds": 0.34218220000184374,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.09040720000484725,
+          "python_peak_mib": 0.11090087890625
+        },
+        "preflight": {
+          "seconds": 0.0015662000005249865,
+          "python_peak_mib": 0.7729568481445312
+        },
+        "transformations": {
+          "seconds": 0.047239499996067025,
+          "python_peak_mib": 0.7779035568237305
+        },
+        "hpc": {
+          "seconds": 0.17496279999613762,
+          "python_peak_mib": 4.775994300842285
+        },
+        "output_io": {
+          "seconds": 0.02715060000628,
+          "python_peak_mib": 0.002445220947265625
+        }
+      }
+    },
+    {
+      "total_seconds": 0.3364958000020124,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.0875305000008666,
+          "python_peak_mib": 0.053336143493652344
+        },
+        "preflight": {
+          "seconds": 0.0014884000047459267,
+          "python_peak_mib": 0.7729568481445312
+        },
+        "transformations": {
+          "seconds": 0.04185409999627154,
+          "python_peak_mib": 0.7733993530273438
+        },
+        "hpc": {
+          "seconds": 0.17821019999973942,
+          "python_peak_mib": 4.775123596191406
+        },
+        "output_io": {
+          "seconds": 0.02673990000039339,
+          "python_peak_mib": 0.002437591552734375
+        }
+      }
+    },
+    {
+      "total_seconds": 0.34384520000457997,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.08635579999827314,
+          "python_peak_mib": 0.05279827117919922
+        },
+        "preflight": {
+          "seconds": 0.001750499999616295,
+          "python_peak_mib": 0.7729568481445312
+        },
+        "transformations": {
+          "seconds": 0.03972960000101011,
+          "python_peak_mib": 0.7733917236328125
+        },
+        "hpc": {
+          "seconds": 0.18425379999825964,
+          "python_peak_mib": 4.7750701904296875
+        },
+        "output_io": {
+          "seconds": 0.031077400002686772,
+          "python_peak_mib": 0.002429962158203125
+        }
+      }
+    },
+    {
+      "total_seconds": 0.32410320000053616,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.08745710000221152,
+          "python_peak_mib": 0.05205821990966797
+        },
+        "preflight": {
+          "seconds": 0.0015060000005178154,
+          "python_peak_mib": 0.7729568481445312
+        },
+        "transformations": {
+          "seconds": 0.03610140000091633,
+          "python_peak_mib": 0.7733840942382812
+        },
+        "hpc": {
+          "seconds": 0.17387380000582198,
+          "python_peak_mib": 4.775108337402344
+        },
+        "output_io": {
+          "seconds": 0.02441440000256989,
+          "python_peak_mib": 0.002422332763671875
+        }
+      }
+    },
+    {
+      "total_seconds": 0.3289820999998483,
+      "output_rows": 300000,
+      "stress_scores_finite": true,
+      "phases": {
+        "input_io": {
+          "seconds": 0.08645300000353018,
+          "python_peak_mib": 0.05185222625732422
+        },
+        "preflight": {
+          "seconds": 0.0019163000033586286,
+          "python_peak_mib": 0.7729568481445312
+        },
+        "transformations": {
+          "seconds": 0.03760189999593422,
+          "python_peak_mib": 0.77337646484375
+        },
+        "hpc": {
+          "seconds": 0.17349380000086967,
+          "python_peak_mib": 4.7751007080078125
+        },
+        "output_io": {
+          "seconds": 0.02877509999962058,
+          "python_peak_mib": 0.002414703369140625
+        }
+      }
+    }
+  ],
+  "summary": {
+    "median_total_seconds": 0.3364958000020124,
+    "min_total_seconds": 0.32410320000053616,
+    "max_total_seconds": 0.34384520000457997,
+    "phases": {
+      "input_io": {
+        "median_seconds": 0.08745710000221152,
+        "min_seconds": 0.08635579999827314,
+        "max_seconds": 0.09040720000484725,
+        "max_python_peak_mib": 0.11090087890625
+      },
+      "preflight": {
+        "median_seconds": 0.0015662000005249865,
+        "min_seconds": 0.0014884000047459267,
+        "max_seconds": 0.0019163000033586286,
+        "max_python_peak_mib": 0.7729568481445312
+      },
+      "transformations": {
+        "median_seconds": 0.03972960000101011,
+        "min_seconds": 0.03610140000091633,
+        "max_seconds": 0.047239499996067025,
+        "max_python_peak_mib": 0.7779035568237305
+      },
+      "hpc": {
+        "median_seconds": 0.17496279999613762,
+        "min_seconds": 0.17349380000086967,
+        "max_seconds": 0.18425379999825964,
+        "max_python_peak_mib": 4.775994300842285
+      },
+      "output_io": {
+        "median_seconds": 0.02715060000628,
+        "min_seconds": 0.02441440000256989,
+        "max_seconds": 0.031077400002686772,
+        "max_python_peak_mib": 0.002445220947265625
+      }
+    }
+  },
+  "memory_note": "python_peak_mib measures traced Python allocations; it does not include all the native memory used by Polars and Numba."
+}

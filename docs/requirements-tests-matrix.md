@@ -63,12 +63,12 @@ can be computed.
 
 | ID | Requirement | Source test |
 |---|---|---|
-| REQ-18 | The analyzers run in sequence and the final result can be logged to W&B. | `test_pipeline_chain` |
+| REQ-18 | The analyzers run in sequence and the final result can be explicitly logged to W&B, even when the low-level pipeline has no project name. | `test_pipeline_chain` |
 | REQ-19 | With `log_to_wandb=False`, transformations and the HPC computation run without initializing logging. | `test_analyzers_run` |
 | REQ-20 | The pipeline supports analyzers compatible with the `analyze_data` method; a no-op chain preserves the DataFrame's identity. | `test_null_analyzers_run` |
 | REQ-21 | `log_to_wandb` can be called directly and logs the `stress_score`. | `test_log_wandb` |
 | REQ-22 | The application logs describe the phases without including reading values. | `test_pipeline_logs_phases_without_sensor_values` |
-| REQ-23 | An analyzer's error is logged and propagated to the caller without exposing dataset data. | `test_pipeline_logs_and_propagates_analyzer_errors` |
+| REQ-23 | An analyzer's error is logged and propagated to the caller without exposing dataset data; if an analyzer fails during execution with logging requested, W&B is not initialized. | `test_pipeline_logs_and_propagates_analyzer_errors`, `test_pipeline_analyzer_failure_with_logging_requested_never_calls_wandb` |
 | REQ-24 | A W&B run is finished even when logging fails. | `test_wandb_run_is_finished_when_logging_fails` |
 
 ### 1.5 File input and output
@@ -113,8 +113,8 @@ does not change the expected separator.
 
 | ID | Requirement | Source test |
 |---|---|---|
-| REQ-45 | The same seed generates inputs with the same fingerprints; every iteration exposes the produced rows and non-negative metrics for I/O, transformations, HPC, and output. | `test_benchmark_produces_repeatable_dataset_and_phase_metrics` |
-| REQ-46 | The number of tanks, readings, and repetitions must be positive. | `test_benchmark_rejects_non_positive_parameters` |
+| REQ-45 | The same seed generates inputs with the same fingerprints; every iteration exposes the produced rows and non-negative metrics for I/O, preflight, transformations, HPC, and output. | `test_benchmark_produces_repeatable_dataset_and_phase_metrics` |
+| REQ-46 | The benchmark requires positive sizes and repetitions, supports both `hpc-first` and `transformer-first` execution orders, and rejects invalid order arguments. | `test_benchmark_rejects_non_positive_parameters`, `test_benchmark_supports_both_orders`, `test_benchmark_rejects_invalid_order` |
 
 ### 1.9 Dataset generator
 
@@ -140,13 +140,28 @@ reproducibility verified by REQ-51 is what makes the measurements in
 | REQ-55 | With all null quantities, the real pipeline preserves the rows and produces zero stress and null scaled deviations, both with and without tank information. | `test_run_full_pipeline_with_all_null_quantities` |
 | REQ-56 | The serial/parallel comparison verifies numeric equivalence, preserves timings and source fingerprints, and rejects empty workloads. | `test_kernel_comparison_checks_equivalence_and_records_evidence`, `test_kernel_comparison_rejects_empty_workload` |
 | REQ-57 | TSV inference considers the entire file: late quantities or decimals in the sensors are allowed; text in quantities and decimal capacities remain rejected. | `test_read_sensors_infers_numeric_types_from_the_whole_file`, `test_read_sensors_rejects_text_after_numeric_rows`, `test_read_tank_info_rejects_late_decimal_capacity` |
-| REQ-58 | Every W&B logging call explicitly uses `finish_previous` and completes the initialization, logging, and run-finishing cycle. | `test_wandb_logging_uses_explicit_reinit_and_finishes_each_run` |
-| REQ-59 | If finite but extreme quantities or temperatures produce overflow in the stress, the analyzer stops processing with `DataValidationError` and identifies the tank. | `test_hpc_computations_rejects_non_finite_stress` |
+| REQ-58 | Every W&B logging call explicitly uses `finish_previous` and completes the initialization, logging, and run-finishing cycle, with either a named or default project. | `test_wandb_logging_uses_explicit_reinit_and_finishes_each_run` |
+| REQ-59 | If finite but extreme quantities or temperatures produce non-finite stress, including a subnormal quantity's self-pair, the analyzer stops processing with `DataValidationError` and identifies the tank. | `test_hpc_computations_rejects_non_finite_stress` |
+| REQ-60 | Preflight tank-coverage validation accepts covered sensors (even with extra metadata tanks) and rejects sensor readings with unknown `tank_id` values before the HPC computation is executed. | `test_validate_tank_coverage_accepts_all_covered`, `test_validate_tank_coverage_allows_extra_tank_info`, `test_validate_tank_coverage_rejects_missing_tank_id`, `test_run_full_pipeline_preflight_catches_unknown_tank_competing_with_overflow` |
+| REQ-61 | Pairwise stress computed before variety expansion matches post-expansion computation within floating-point tolerance, preserving schema and final `stress_score` column order. | `test_run_full_pipeline_reordered_vs_reference_and_legacy_order`, `test_legacy_explicitly_ordered_pipeline_usable` |
+| REQ-62 | W&B initialization and finish errors propagate to the caller, and logging failure handling preserves the original logging exception even when `run.finish` cleanup also fails. | `test_wandb_init_failure_propagates`, `test_wandb_log_and_finish_both_fail_preserves_log_error`, `test_wandb_finish_only_fails_propagates` |
+
+### 1.11 Performance presentation and experiment tracking
+
+| ID | Requirement | Source test |
+|---|---|---|
+| REQ-63 | Cache measurements use fresh processes and isolated disk caches, verify actual misses/hits and numerical correctness, reject invalid workloads or unexpected cache behavior, and never overwrite previous evidence. | `test_cache_comparison_uses_fresh_processes_and_preserves_results`, `test_cache_comparison_rejects_invalid_workload`, `test_cache_comparison_rejects_unexpected_cache_behavior`, `test_cache_cli_preserves_existing_evidence` |
+| REQ-64 | Chart/report metrics derive from raw repetitions; malformed, failed, non-finite, or incomparable measurements are rejected. Archived JSON measurements are validated in CI. | `test_reporting_recomputes_samples_from_raw_iterations`, `test_reporting_rejects_invalid_measurements`, `test_reporting_rejects_failed_or_incomplete_reports`, `test_chart_comparison_rejects_incomparable_runs`, `test_archived_benchmark_reports_have_valid_measurements` |
+| REQ-65 | Python/Matplotlib generates only PNG charts without importing W&B. Charts show source references and observed min/max; traced memory has explicit units, log charts use markers, and kernel ratios distinguish compilation from parallelism. | `test_generate_charts_creates_only_png_without_network`, `test_plot_cli_runs_without_importing_wandb`, `test_charts_show_recorded_memory_log_markers_and_kernel_ratio` |
+| REQ-66 | Optional W&B import preserves measured-code provenance, repetitions, and the original JSON artifact; validates before connecting and propagates logging failures while closing the run context. | `test_wandb_import_preserves_provenance_raw_samples_and_artifact`, `test_wandb_import_failure_propagates_and_closes_context`, `test_wandb_import_validates_before_opening_run` |
+| REQ-67 | Optional Python, serial Numba and parallel Numba variants use identical inputs and verify numerical equivalence; interpreted pair work is bounded and existing evidence is preserved. | `test_kernel_comparison_checks_same_workload_for_all_variants`, `test_python_comparison_rejects_excessive_pair_work`, `test_comparison_cli_preserves_existing_evidence` |
+| REQ-68 | Joblib scaling separates first/repeat calls in fresh interpreters and verifies identical ordered output; invalid parameters and changed outputs are rejected, while generator defaults and caller random state are preserved. | `test_joblib_comparison_preserves_ordered_records_and_random_state`, `test_joblib_comparison_rejects_invalid_workers`, `test_joblib_comparison_rejects_non_positive_workload`, `test_joblib_comparison_rejects_changed_output`, `test_generator_worker_options_preserve_default_records` |
+| REQ-69 | Extended PNG charts and W&B summaries preserve speedups below one; malformed Joblib evidence is rejected before replacing charts and historical two-variant kernel reports remain supported. | `test_extended_charts_and_speedups_preserve_slowdowns`, `test_reporting_rejects_invalid_joblib_evidence`, `test_invalid_joblib_chart_does_not_replace_existing_png`, `test_generate_charts_creates_only_png_without_network`, `test_wandb_import_preserves_provenance_raw_samples_and_artifact` |
 
 ## 2. Input data contracts
 
 Both datasets must contain at least one row. Validation happens before the
-transformations.
+HPC computation and transformations.
 
 ### 2.1 `sensors_*.tsv`
 

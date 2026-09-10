@@ -1,4 +1,5 @@
 import logging
+from unittest.mock import Mock
 
 import polars as pl
 import pytest
@@ -9,8 +10,9 @@ from winery_adventures.pipeline import WineryPipeline
 from winery_adventures.transformations import WineryTransformer
 
 
-def test_pipeline_chain(monkey_wandb_run, sensors_df):
-    pipeline = WineryPipeline([WineryTransformer(), WineryHPCComputations()], project_name="TestProj")
+@pytest.mark.parametrize("project_name", ["TestProj", None])
+def test_pipeline_chain(monkey_wandb_run, sensors_df, project_name):
+    pipeline = WineryPipeline([WineryTransformer(), WineryHPCComputations()], project_name=project_name)
     df_out = pipeline.run(sensors_df, log_to_wandb=True)
 
     assert "avg_pH_per_tank" in df_out.columns, "Missing transformation column"
@@ -72,7 +74,8 @@ def test_pipeline_logs_phases_without_sensor_values(caplog, sensors_df):
     assert "3.3" not in caplog.text
 
 
-def test_wandb_logging_uses_explicit_reinit_and_finishes_each_run(monkeypatch):
+@pytest.mark.parametrize("project_name", ["TestProj", None])
+def test_wandb_logging_uses_explicit_reinit_and_finishes_each_run(monkeypatch, project_name):
     # Each call uses a separate run and completes its init/log/finish cycle.
     calls = []
 
@@ -88,12 +91,12 @@ def test_wandb_logging_uses_explicit_reinit_and_finishes_each_run(monkeypatch):
         return RecordingRun()
 
     monkeypatch.setattr(wandb, "init", init)
-    pipeline = WineryPipeline([], project_name="TestProj")
+    pipeline = WineryPipeline([], project_name=project_name)
     for _ in range(2):
         pipeline.log_to_wandb(pl.DataFrame({"tank_id": [1]}))
 
     expected_cycle = [
-        ("init", {"project": "TestProj", "reinit": "finish_previous"}),
+        ("init", {"project": project_name, "reinit": "finish_previous"}),
         ("log", {"output_rows": 1, "tank_count": 1}),
         ("finish", None),
     ]
@@ -135,3 +138,69 @@ def test_wandb_run_is_finished_when_logging_fails(monkeypatch):
         pipeline.log_to_wandb(pl.DataFrame({"stress_score": [0.5]}))
 
     assert finish_calls == [True]
+
+
+def test_wandb_init_failure_propagates(monkeypatch):
+    monkeypatch.setattr(wandb, "init", Mock(side_effect=RuntimeError("init failed")))
+    pipeline = WineryPipeline([], project_name="TestProj")
+    with pytest.raises(RuntimeError, match="init failed"):
+        pipeline.log_to_wandb(pl.DataFrame({"stress_score": [0.5]}))
+
+
+def test_wandb_log_and_finish_both_fail_preserves_log_error(monkeypatch):
+    class DoubleFailingRun:
+        def log(self, data):
+            raise RuntimeError("primary log failure")
+
+        def finish(self):
+            raise RuntimeError("secondary finish failure")
+
+    monkeypatch.setattr(wandb, "init", lambda **kwargs: DoubleFailingRun())
+    pipeline = WineryPipeline([], project_name="TestProj")
+    with pytest.raises(RuntimeError, match="primary log failure"):
+        pipeline.log_to_wandb(pl.DataFrame({"stress_score": [0.5]}))
+
+
+def test_wandb_finish_only_fails_propagates(monkeypatch):
+    class FinishFailingRun:
+        def log(self, data):
+            pass
+
+        def finish(self):
+            raise RuntimeError("finish cleanup failure")
+
+    monkeypatch.setattr(wandb, "init", lambda **kwargs: FinishFailingRun())
+    pipeline = WineryPipeline([], project_name="TestProj")
+    with pytest.raises(RuntimeError, match="finish cleanup failure"):
+        pipeline.log_to_wandb(pl.DataFrame({"stress_score": [0.5]}))
+
+
+def test_pipeline_analyzer_failure_with_logging_requested_never_calls_wandb(monkeypatch, sensors_df):
+    class FailingAnalyzer:
+        def analyze_data(self, df):
+            raise ValueError("analyzer error")
+
+    init_mock = Mock()
+    monkeypatch.setattr(wandb, "init", init_mock)
+    pipeline = WineryPipeline([FailingAnalyzer()], project_name="TestProj")
+    with pytest.raises(ValueError, match="analyzer error"):
+        pipeline.run(sensors_df, log_to_wandb=True)
+
+    init_mock.assert_not_called()
+
+
+def test_legacy_explicitly_ordered_pipeline_usable(sensors_df, tank_info_df_grape_variety_split):
+    legacy_pipeline = WineryPipeline(
+        [WineryTransformer(tank_info=tank_info_df_grape_variety_split), WineryHPCComputations()]
+    )
+    reordered_pipeline = WineryPipeline(
+        [WineryHPCComputations(), WineryTransformer(tank_info=tank_info_df_grape_variety_split)]
+    )
+
+    legacy_out = legacy_pipeline.run(sensors_df)
+    reordered_out = reordered_pipeline.run(sensors_df)
+
+    assert legacy_out.columns == reordered_out.columns
+    assert legacy_out.columns[-1] == "stress_score"
+    assert legacy_out.dtypes == reordered_out.dtypes
+    assert legacy_out.height == reordered_out.height

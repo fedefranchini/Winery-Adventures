@@ -2,6 +2,7 @@
 # tests, datasets, the generator, and the license without duplicating these two documents.
 docs/professor-assignment.md
 docs/professor-material.md
+/Winery-Adventures.zip
 .DS_Store
 .venv/
 __pycache__/

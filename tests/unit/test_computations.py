@@ -118,18 +118,20 @@ def test_hpc_computations_returns_zero_without_computable_quantities():
 
 @pytest.mark.parametrize(
     ("temperatures", "quantity"),
-    [([25.0, 26.0], 1e-310), ([1e308, -1e308], 500.0)],
-    ids=["tiny-positive-quantity", "extreme-finite-temperature"],
+    [([25.0, 26.0], 1e-310), ([1e308, -1e308], 500.0), ([25.0], 1e-310)],
+    ids=["tiny-positive-quantity", "extreme-finite-temperature", "subnormal-self-pair"],
 )
 def test_hpc_computations_rejects_non_finite_stress(temperatures, quantity):
     # Validation accepts finite inputs; the computation detects the subsequent overflow.
+    # A single reading isolates the diagonal: 0 * inf must not silently become zero.
+    row_count = len(temperatures)
     df_input = pl.DataFrame(
         {
-            "tank_id": [7, 7],
-            "time": ["2025-03-01 00:00:00", "2025-03-01 01:00:00"],
-            "pH": [3.4, 3.6],
+            "tank_id": [7] * row_count,
+            "time": ["2025-03-01 00:00:00"] * row_count,
+            "pH": [3.4, 3.6][:row_count],
             "temp": temperatures,
-            "quantity_liters": [quantity, quantity],
+            "quantity_liters": [quantity] * row_count,
         }
     )
     validate_sensors(df_input)

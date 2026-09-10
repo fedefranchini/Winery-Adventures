@@ -34,6 +34,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Plotting is optional: pipeline execution and JSON benchmarks do not require it.
+plots = ["matplotlib>=3.8,<4"]
 # Install this group with: python -m pip install -e ".[dev]"
 dev = [
     "black>=24,<27",
@@ -43,6 +45,7 @@ dev = [
     # Sphinx generates API documentation; MyST integrates Markdown guides.
     "sphinx>=7,<9",
     "myst-parser>=3,<5",
+    "matplotlib>=3.8,<4",
 ]
 
 [tool.setuptools]
@@ -67,8 +70,8 @@ markers = [
 [tool.coverage.run]
 # Branch coverage detects untested conditional branches as well as unexecuted
 # lines. In addition to the application package, the report covers the dataset
-# generator used by examples and benchmarks. The body of generate_sensor_row
-# runs in Joblib workers and cannot be traced by coverage.
+# generator used by examples and benchmarks. Worker-process execution is not
+# traced here; sequential generator tests cover the same row-generation logic.
 branch = true
 source = ["winery_adventures", "data_generator"]
 

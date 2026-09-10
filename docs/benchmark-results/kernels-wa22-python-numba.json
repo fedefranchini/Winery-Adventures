@@ -1,0 +1,73 @@
+{
+  "measured_at_utc": "2026-09-10T11:23:17.992962+00:00",
+  "environment": {
+    "python": "3.11.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "numba": "0.67.0",
+    "numpy": "2.4.6",
+    "polars": "1.44.1",
+    "numba_threads": 32,
+    "git_revision": "17b735f90a856d7f36ab7671364977cd1e4b092d"
+  },
+  "source_sha256": {
+    "benchmarks/compare_kernels.py": "f385a2ed63d1addf3394b3827b0d4db964aa6b1e573ee6b4447463f5aead19a8",
+    "benchmarks/benchmark_pipeline.py": "b4c3ba2a9330e9bc9661f623a0af8e42ac455419392f9c8733992f7623f91c4e",
+    "data_generator.py": "61642f60a7a8933f7584a6df497a62c03b81041d37fcdde712fd4c6597d440f1",
+    "winery_adventures/computations.py": "ae93192731264aa7c905941213733eacc9e009d0399c09d0cf5a1bb629d76566",
+    "winery_adventures/transformations.py": "d87c7812dfc14de6e0373cb43db71e78a7847ab3f5af8175fea0bc22ea7cb0e3",
+    "winery_adventures/io.py": "9c3b224acecac9a311e8278e5bfc4a1c1a853e3aa77a6652413f727cf90e9e4a",
+    "winery_adventures/validation.py": "95741a920c22259cb7c59e4ed91041d295876fb23355b65480126d71225d6e30"
+  },
+  "parameters": {
+    "num_tanks": 20,
+    "num_readings": 10000,
+    "repetitions": 6,
+    "seed": 42,
+    "parallel_cache_enabled": true,
+    "timing_mode": "warm (compilation and cache loading excluded)",
+    "include_python": true
+  },
+  "dataset": {
+    "sensor_sha256": "e448462335a9385205a60495e860f3c6adb654637b6286fcf23744efc762ecfa",
+    "tank_info_sha256": "3641e0297d71338e7ed91bf6606b00ba47af6dc9c5a5c9f189048005e475c9c5",
+    "output_rows": 30000,
+    "computable_rows": 9023,
+    "ordered_pairs": 4078425
+  },
+  "seconds": {
+    "python": [
+      3.3936268999996173,
+      3.4455189000000246,
+      3.437889699999687,
+      3.408000500000526,
+      3.4075137999998333,
+      3.3889877999999953
+    ],
+    "serial": [
+      0.004657200000110606,
+      0.006593999999495281,
+      0.005685900000571564,
+      0.004632199999832665,
+      0.008219500000450353,
+      0.004954099999849859
+    ],
+    "parallel": [
+      0.005847800000083225,
+      0.009728699999868695,
+      0.004858999999669322,
+      0.003520799999932933,
+      0.00405750000027183,
+      0.001993899999433779
+    ]
+  },
+  "median_seconds": {
+    "python": 3.4077571500001795,
+    "serial": 0.005320000000210712,
+    "parallel": 0.004458249999970576
+  },
+  "speedup": 1.1932933326407948,
+  "max_absolute_error": 1.8474111129762605e-13,
+  "scores_finite": true,
+  "method": "Same current formula and complete unexpanded readings across all variants. Python, when selected, executes the undecorated body; serial and parallel use Numba. Times include kernel calls and collection of scores, excluding data preparation and compilation. output_rows reports the total rows produced by the full pipeline after variety expansion, while computable_rows counts the valid unexpanded sensor readings evaluated by the kernels. This is not a benchmark of the historical repository revision."
+}

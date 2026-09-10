@@ -26,7 +26,7 @@ class WineryAnalyzer(Protocol):
 
 
 class WineryPipeline:
-    """Runs a list of analyzers in sequence and handles wandb logging."""
+    """Runs a sequence of analyzers satisfying the WineryAnalyzer Protocol and handles wandb logging."""
 
     def __init__(self, analyzers: Sequence[WineryAnalyzer], project_name: str | None = None):
         """Configure the processing sequence.
@@ -79,8 +79,9 @@ class WineryPipeline:
             df: the pipeline result to summarize and log.
 
         Raises:
-            Exception: propagates W&B initialization or logging errors,
-                still finishing the already started run.
+            Exception: propagates W&B initialization, logging, or run-finishing errors.
+                If logging fails, finishing the run is still attempted; if both fail,
+                the original logging error is preserved.
         """
 
         metrics: dict[str, int | float] = {"output_rows": df.height}
@@ -101,8 +102,17 @@ class WineryPipeline:
         # Start a new run, finishing any previous run, without deprecated options.
         run = wandb.init(project=self.project_name, reinit="finish_previous")
         # Avoid payloads proportional to the dataset size and always finish the created run.
+        log_exc: Exception | None = None
         try:
             run.log(metrics)
+        except Exception as exc:
+            log_exc = exc
+            raise
         finally:
-            run.finish()
+            try:
+                run.finish()
+            except Exception:
+                if log_exc is None:
+                    raise
+                logger.warning("run.finish() failed after logging error", exc_info=True)
         logger.info("wandb logging completed")

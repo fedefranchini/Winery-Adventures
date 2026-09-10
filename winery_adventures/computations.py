@@ -8,13 +8,20 @@ from winery_adventures.base import BaseWineryAnalyzer
 from winery_adventures.validation import DataValidationError
 
 
-@njit(parallel=True)
+# Persist compiled specializations between processes; results are still computed on every call.
+@njit(parallel=True, cache=True)
 def pairwise_stress_function(
     pH_vals: np.ndarray,
     temp_vals: np.ndarray,
     quantity_vals: np.ndarray,
 ) -> float:
     """Compute the average stress by comparing every pair of readings.
+
+    Equivalence between evaluating this formula before versus after grape variety
+    expansion is mathematical within floating-point tolerances (not bitwise identical),
+    as differing summation order and size affect floating-point rounding. Computing
+    pairwise stress early on unexpanded sensor readings avoids expansion-induced
+    accumulation overflow in intermediate sums.
 
     Args:
         pH_vals: pH values ordered by reading.

@@ -6,6 +6,7 @@ from winery_adventures.computations import WineryHPCComputations
 from winery_adventures.io import read_sensors, read_tank_info, write_output
 from winery_adventures.pipeline import WineryPipeline
 from winery_adventures.transformations import WineryTransformer
+from winery_adventures.validation import validate_tank_coverage
 
 
 def run_full_pipeline(
@@ -32,6 +33,8 @@ def run_full_pipeline(
         FileNotFoundError: if a required input file does not exist.
         DataValidationError: if a dataset does not satisfy the expected contract.
         OSError: if the result cannot be written.
+        Exception: propagates W&B initialization, logging, or run-finishing errors
+            when logging is enabled; output writing is not reached in that case.
     """
     tasks = [joblib.delayed(read_sensors)(input_csv)]
 
@@ -45,7 +48,13 @@ def run_full_pipeline(
     sensors_df = loaded_datasets[0]
     tank_info_df = loaded_datasets[1] if tank_info_csv is not None else None
 
-    analyzers = [WineryTransformer(tank_info=tank_info_df), WineryHPCComputations()]
+    # Preflight coverage check: ensure missing tank references are caught
+    # before running expensive HPC computations and potential overflow errors.
+    if tank_info_df is not None:
+        validate_tank_coverage(sensors_df, tank_info_df)
+
+    # Compute HPC stress before variety expansion to avoid O(n^2) duplicate comparisons.
+    analyzers = [WineryHPCComputations(), WineryTransformer(tank_info=tank_info_df)]
     pipeline = WineryPipeline(analyzers=analyzers, project_name=project_name)
     result_df = pipeline.run(sensors_df, log_to_wandb=project_name is not None)
 

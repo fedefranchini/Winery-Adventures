@@ -1,0 +1,353 @@
+{
+  "kind": "joblib",
+  "measured_at_utc": "2026-09-10T11:24:19.871425+00:00",
+  "environment": {
+    "python": "3.11.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "joblib": "1.5.3",
+    "available_cpus": 32,
+    "effective_workers": {
+      "1": 1,
+      "2": 2,
+      "4": 4,
+      "-1": 32
+    },
+    "git_revision": "17b735f90a856d7f36ab7671364977cd1e4b092d"
+  },
+  "parameters": {
+    "num_tanks": 100,
+    "num_readings": 10000,
+    "repetitions": 4,
+    "seed": 42,
+    "jobs": [
+      1,
+      2,
+      4,
+      -1
+    ],
+    "backend": "loky",
+    "inner_max_num_threads": 1
+  },
+  "source_sha256": {
+    "benchmarks/compare_joblib.py": "8983249dea66aa08a42c1e498d0f399d593e7129818cdd1aceda21ffe05f3bda",
+    "benchmarks/benchmark_pipeline.py": "b4c3ba2a9330e9bc9661f623a0af8e42ac455419392f9c8733992f7623f91c4e",
+    "data_generator.py": "61642f60a7a8933f7584a6df497a62c03b81041d37fcdde712fd4c6597d440f1"
+  },
+  "dataset": {
+    "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+    "output_rows": 10000
+  },
+  "seconds": {
+    "cold_1": [
+      0.17140919999928883,
+      0.17136690000006638,
+      0.16100920000008045,
+      0.1803009999994174
+    ],
+    "warm_1": [
+      0.16034870000021328,
+      0.16862659999969765,
+      0.15346060000047146,
+      0.16923829999996087
+    ],
+    "cold_2": [
+      0.7603902000000744,
+      0.8367951000000176,
+      0.7620651000006546,
+      0.7324781999996048
+    ],
+    "warm_2": [
+      0.16982390000066516,
+      0.22019949999958044,
+      0.16986529999940103,
+      0.1638316999997187
+    ],
+    "cold_4": [
+      0.9493573999998262,
+      0.9790313000003152,
+      0.8603850999998031,
+      0.9245924999995623
+    ],
+    "warm_4": [
+      0.2521037999995315,
+      0.2629071000001204,
+      0.23263450000013108,
+      0.2293454999999085
+    ],
+    "cold_-1": [
+      3.6054711000006137,
+      3.747184200000447,
+      3.4751698000000033,
+      3.4582750999998098
+    ],
+    "warm_-1": [
+      1.403539699999783,
+      1.355814100000316,
+      1.291027999999642,
+      1.3328136999998605
+    ]
+  },
+  "median_seconds": {
+    "cold_1": 0.1713880499996776,
+    "warm_1": 0.16448764999995547,
+    "cold_2": 0.7612276500003645,
+    "warm_2": 0.1698446000000331,
+    "cold_4": 0.9369749499996942,
+    "warm_4": 0.24236914999983128,
+    "cold_-1": 3.5403204500003085,
+    "warm_-1": 1.3443139000000883
+  },
+  "iterations": [
+    {
+      "order": [
+        1,
+        2,
+        4,
+        -1
+      ],
+      "measurements": {
+        "1": {
+          "effective_workers": 1,
+          "cold": {
+            "seconds": 0.17140919999928883,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.16034870000021328,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "2": {
+          "effective_workers": 2,
+          "cold": {
+            "seconds": 0.7603902000000744,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.16982390000066516,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "4": {
+          "effective_workers": 4,
+          "cold": {
+            "seconds": 0.9493573999998262,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.2521037999995315,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "-1": {
+          "effective_workers": 32,
+          "cold": {
+            "seconds": 3.6054711000006137,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 1.403539699999783,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        2,
+        4,
+        -1,
+        1
+      ],
+      "measurements": {
+        "2": {
+          "effective_workers": 2,
+          "cold": {
+            "seconds": 0.8367951000000176,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.22019949999958044,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "4": {
+          "effective_workers": 4,
+          "cold": {
+            "seconds": 0.9790313000003152,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.2629071000001204,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "-1": {
+          "effective_workers": 32,
+          "cold": {
+            "seconds": 3.747184200000447,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 1.355814100000316,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "1": {
+          "effective_workers": 1,
+          "cold": {
+            "seconds": 0.17136690000006638,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.16862659999969765,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        4,
+        -1,
+        1,
+        2
+      ],
+      "measurements": {
+        "4": {
+          "effective_workers": 4,
+          "cold": {
+            "seconds": 0.8603850999998031,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.23263450000013108,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "-1": {
+          "effective_workers": 32,
+          "cold": {
+            "seconds": 3.4751698000000033,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 1.291027999999642,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "1": {
+          "effective_workers": 1,
+          "cold": {
+            "seconds": 0.16100920000008045,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.15346060000047146,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "2": {
+          "effective_workers": 2,
+          "cold": {
+            "seconds": 0.7620651000006546,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.16986529999940103,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        -1,
+        1,
+        2,
+        4
+      ],
+      "measurements": {
+        "-1": {
+          "effective_workers": 32,
+          "cold": {
+            "seconds": 3.4582750999998098,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 1.3328136999998605,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "1": {
+          "effective_workers": 1,
+          "cold": {
+            "seconds": 0.1803009999994174,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.16923829999996087,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "2": {
+          "effective_workers": 2,
+          "cold": {
+            "seconds": 0.7324781999996048,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.1638316999997187,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        },
+        "4": {
+          "effective_workers": 4,
+          "cold": {
+            "seconds": 0.9245924999995623,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          },
+          "warm": {
+            "seconds": 0.2293454999999085,
+            "output_sha256": "18313275e2ed676dcdbd5599abdc3185bcaf6cae5a9c3d509c0cc7b0541939e6",
+            "output_rows": 10000
+          }
+        }
+      }
+    }
+  ],
+  "outputs_match": true,
+  "method": "Each configuration/repetition starts in a fresh interpreter. Cold includes pool startup; warm is a second generator call eligible for executor reuse. Both include row seeds, scheduling, serialization and result collection; exclude interpreter startup, imports, hashing and file I/O. n_jobs=1 is sequential and has no worker pool. Worker counts are not physical core counts. The same seed produces exactly identical ordered records across every call. These are generator timings, not pipeline I/O or Numba timings."
+}
