@@ -51,3 +51,12 @@ Performance measurement
 
 .. automodule:: benchmarks.compare_kernels
    :members:
+
+.. automodule:: benchmarks.compare_cache
+   :members:
+
+.. automodule:: benchmarks.compare_joblib
+   :members:
+
+.. automodule:: benchmarks.reporting
+   :members:

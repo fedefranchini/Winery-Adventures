@@ -116,6 +116,35 @@ The benchmark can be started with:
 python -m benchmarks.benchmark_pipeline --tanks 10 --readings 1000 --repetitions 2 --seed 42
 ```
 
+### Performance experiments and charts
+
+The numerical kernel uses Numba disk caching to reuse compiled specializations
+across Python processes. This reduces repeated compilation, not the work needed
+to compute a result. The benchmarks distinguish warm execution from first-call
+latency with an empty or populated cache.
+
+Install plotting support with `python -m pip install -e ".[plots]"` (also included
+in the development dependencies). Generate the presentation charts from recorded
+evidence without running a new benchmark:
+
+```bash
+python -m benchmarks.reporting plot --production docs/benchmark-results/pipeline-wa22-hpc-first.json --legacy docs/benchmark-results/pipeline-wa22-transformer-first.json --kernels docs/benchmark-results/kernels-wa22-python-numba.json --cache docs/benchmark-results/cache-wa22.json --joblib docs/benchmark-results/joblib-wa22.json --output-dir docs/performance-plots
+```
+
+![Pipeline runtime comparison](docs/performance-plots/pipeline-total.png)
+
+The six PNG charts cover pipeline reordering, phase timings, traced Python memory, Python versus
+serial/parallel Numba, disk-cache latency, and Joblib generator scaling. They are
+separate controlled experiments, not cumulative speedups. Joblib results include
+both first and repeat calls and explicitly show slowdowns when parallelism costs
+more than it saves.
+
+The [benchmark report](docs/benchmark-report.md#presentation-charts-and-experiment-tracking)
+explains how to collect new measurements, regenerate PNG charts with Python and Matplotlib, and optionally
+import JSON reports into W&B. Local benchmarks and charts require no W&B login.
+Application logging still records output statistics; benchmark logging records
+performance experiments separately, after timing has finished.
+
 ## Documentation
 
 - [User guide](docs/usage-guide.md)

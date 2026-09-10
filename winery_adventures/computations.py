@@ -8,7 +8,8 @@ from winery_adventures.base import BaseWineryAnalyzer
 from winery_adventures.validation import DataValidationError
 
 
-@njit(parallel=True)
+# Persist compiled specializations between processes; results are still computed on every call.
+@njit(parallel=True, cache=True)
 def pairwise_stress_function(
     pH_vals: np.ndarray,
     temp_vals: np.ndarray,

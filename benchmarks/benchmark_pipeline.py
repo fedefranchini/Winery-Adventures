@@ -12,6 +12,7 @@ import tempfile
 import time
 import tracemalloc
 from collections.abc import Callable
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -54,6 +55,7 @@ def _git_revision() -> str:
             check=True,
             capture_output=True,
             text=True,
+            cwd=Path(__file__).resolve().parents[1],
         ).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
@@ -265,6 +267,7 @@ def run_benchmark(
     ]
 
     return {
+        "measured_at_utc": datetime.now(timezone.utc).isoformat(),
         "environment": {
             "python": sys.version.split()[0],
             "platform": platform.platform(),
@@ -272,6 +275,9 @@ def run_benchmark(
             "polars": pl.__version__,
             "numba": numba.__version__,
             "joblib": joblib.__version__,
+            "numpy": np.__version__,
+            "processor": platform.processor(),
+            "numba_threads": numba.get_num_threads(),
         },
         "source_sha256": {name: _sha256(source_root / name) for name in sources},
         "parameters": {
@@ -280,6 +286,8 @@ def run_benchmark(
             "repetitions": repetitions,
             "seed": seed,
             "order": order,
+            "cache_enabled": True,
+            "timing_mode": "warm (compilation and cache loading excluded)",
         },
         "dataset": {
             "generation_seconds": dataset["generation_seconds"],

@@ -178,7 +178,7 @@ def generate_tank_info(num_tanks=20, variety_list=None):
     return rows
 
 
-def generate_sensor_data(num_tanks=5, num_readings=20, start_date="2025-01-01"):
+def generate_sensor_data(num_tanks=5, num_readings=20, start_date="2025-01-01", *, n_jobs=-1, show_progress=True):
     """Generate synthetic readings in parallel, preserving their order.
 
     Args:
@@ -186,6 +186,8 @@ def generate_sensor_data(num_tanks=5, num_readings=20, start_date="2025-01-01"):
         num_readings: number of readings to generate.
         start_date: start date in ``YYYY-MM-DD`` format; each reading adds
             0 to 10 days and 0 to 23 hours.
+        n_jobs: Joblib worker count; -1 uses all available CPUs, 1 is sequential.
+        show_progress: display the progress bar when true.
 
     Returns:
         A list of dictionaries with ``tank_id``, ``time``, ``pH`` (3-4),
@@ -224,9 +226,9 @@ def generate_sensor_data(num_tanks=5, num_readings=20, start_date="2025-01-01"):
     # Seeds are set before parallel execution: worker order does not change the data.
     row_seeds = [random.randint(0, 2**32 - 1) for _ in range(num_readings)]
 
-    rows = joblib.Parallel(n_jobs=-1)(
+    rows = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(generate_sensor_row)(row_seeds[i])
-        for i in tqdm.tqdm(range(num_readings), desc="Generating sensor data")
+        for i in tqdm.tqdm(range(num_readings), desc="Generating sensor data", disable=not show_progress)
     )
 
     return rows

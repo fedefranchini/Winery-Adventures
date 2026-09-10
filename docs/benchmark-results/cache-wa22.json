@@ -1,0 +1,158 @@
+{
+  "kind": "cache",
+  "measured_at_utc": "2026-09-09T23:50:26.376930+00:00",
+  "environment": {
+    "python": "3.11.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "numpy": "2.4.6",
+    "numba": "0.67.0",
+    "numba_threads": 32,
+    "git_revision": "61fdf0c2afafdb9e4fdab56c03b2f0e279cbbcda"
+  },
+  "source_sha256": {
+    "benchmarks/compare_cache.py": "306c4ee5ed38d30b6235d542d91537b0334077140856d21d4f59eed89e96b2f3",
+    "benchmarks/benchmark_pipeline.py": "b4c3ba2a9330e9bc9661f623a0af8e42ac455419392f9c8733992f7623f91c4e",
+    "winery_adventures/computations.py": "ae93192731264aa7c905941213733eacc9e009d0399c09d0cf5a1bb629d76566",
+    "winery_adventures/base.py": "302e357b1dec5cad73ecdefff378dc4b2c411387f8bc86e3012cfd7a1494b05a",
+    "winery_adventures/validation.py": "95741a920c22259cb7c59e4ed91041d295876fb23355b65480126d71225d6e30"
+  },
+  "parameters": {
+    "size": 256,
+    "repetitions": 3,
+    "warm_calls": 5,
+    "cache_enabled": true
+  },
+  "dataset": {
+    "input_sha256": "90a5ed518995cb3436d2771b8e085e32cfa181a3d08411fcd34b8ae684c6aa98"
+  },
+  "iterations": [
+    {
+      "cold": {
+        "first_call_seconds": 0.6464227000033134,
+        "warm_call_seconds": [
+          3.7999998312443495e-05,
+          3.5099998058285564e-05,
+          0.00013179999950807542,
+          3.1600000511389226e-05,
+          2.6599998818710446e-05
+        ],
+        "score": 9.118762103554282,
+        "max_absolute_error": 5.329070518200751e-15,
+        "cache_hits": 0,
+        "cache_misses": 1,
+        "input_sha256": "90a5ed518995cb3436d2771b8e085e32cfa181a3d08411fcd34b8ae684c6aa98",
+        "numba_threads": 32
+      },
+      "cached": {
+        "first_call_seconds": 0.1771353000003728,
+        "warm_call_seconds": [
+          3.189999551977962e-05,
+          3.0399998649954796e-05,
+          2.439999661874026e-05,
+          2.5399996957276016e-05,
+          2.5499997718725353e-05
+        ],
+        "score": 9.118762103554282,
+        "max_absolute_error": 5.329070518200751e-15,
+        "cache_hits": 1,
+        "cache_misses": 0,
+        "input_sha256": "90a5ed518995cb3436d2771b8e085e32cfa181a3d08411fcd34b8ae684c6aa98",
+        "numba_threads": 32
+      }
+    },
+    {
+      "cold": {
+        "first_call_seconds": 0.6597206000005826,
+        "warm_call_seconds": [
+          3.819999983534217e-05,
+          0.00016250000044237822,
+          4.3799998820759356e-05,
+          3.399999695830047e-05,
+          3.5099998058285564e-05
+        ],
+        "score": 9.118762103554282,
+        "max_absolute_error": 5.329070518200751e-15,
+        "cache_hits": 0,
+        "cache_misses": 1,
+        "input_sha256": "90a5ed518995cb3436d2771b8e085e32cfa181a3d08411fcd34b8ae684c6aa98",
+        "numba_threads": 32
+      },
+      "cached": {
+        "first_call_seconds": 0.17703769999934593,
+        "warm_call_seconds": [
+          6.500000017695129e-05,
+          3.680000372696668e-05,
+          2.9499999072868377e-05,
+          2.8200003725942224e-05,
+          2.4400003894697875e-05
+        ],
+        "score": 9.118762103554282,
+        "max_absolute_error": 5.329070518200751e-15,
+        "cache_hits": 1,
+        "cache_misses": 0,
+        "input_sha256": "90a5ed518995cb3436d2771b8e085e32cfa181a3d08411fcd34b8ae684c6aa98",
+        "numba_threads": 32
+      }
+    },
+    {
+      "cold": {
+        "first_call_seconds": 0.653809800001909,
+        "warm_call_seconds": [
+          4.230000195093453e-05,
+          4.780000017490238e-05,
+          3.4500000765547156e-05,
+          2.7900001441594213e-05,
+          3.170000127283856e-05
+        ],
+        "score": 9.118762103554282,
+        "max_absolute_error": 5.329070518200751e-15,
+        "cache_hits": 0,
+        "cache_misses": 1,
+        "input_sha256": "90a5ed518995cb3436d2771b8e085e32cfa181a3d08411fcd34b8ae684c6aa98",
+        "numba_threads": 32
+      },
+      "cached": {
+        "first_call_seconds": 0.18161590000090655,
+        "warm_call_seconds": [
+          6.189999839989468e-05,
+          5.20999965374358e-05,
+          3.190000279573724e-05,
+          3.279999509686604e-05,
+          2.8799993742723018e-05
+        ],
+        "score": 9.118762103554282,
+        "max_absolute_error": 5.329070518200751e-15,
+        "cache_hits": 1,
+        "cache_misses": 0,
+        "input_sha256": "90a5ed518995cb3436d2771b8e085e32cfa181a3d08411fcd34b8ae684c6aa98",
+        "numba_threads": 32
+      }
+    }
+  ],
+  "seconds": {
+    "cold": [
+      0.6464227000033134,
+      0.6597206000005826,
+      0.653809800001909
+    ],
+    "cached": [
+      0.1771353000003728,
+      0.17703769999934593,
+      0.18161590000090655
+    ],
+    "warm": [
+      2.5499997718725353e-05,
+      2.9499999072868377e-05,
+      3.279999509686604e-05
+    ]
+  },
+  "median_seconds": {
+    "cold": 0.653809800001909,
+    "cached": 0.1771353000003728,
+    "warm": 2.9499999072868377e-05
+  },
+  "scores_finite": true,
+  "max_absolute_error": 5.329070518200751e-15,
+  "method": "First kernel call only, not total program startup. Cold and cached calls use distinct processes. Imports, input construction, and correctness checks are excluded. Warm values are per-pair medians."
+}
