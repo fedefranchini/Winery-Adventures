@@ -10,6 +10,13 @@ on:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      # Do not stop the other versions when one fails: the full compatibility
+      # picture is more useful than the first failure.
+      fail-fast: false
+      matrix:
+        # Covers every version allowed by requires-python (">=3.10").
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,8 +24,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
-      - name: Create virtual environment (Python 3.10)
-        run: uv venv --python 3.10
+      - name: Create virtual environment
+        run: uv venv --python ${{ matrix.python-version }}
 
       - name: Install project (with dev dependencies)
         run: |
@@ -26,17 +33,22 @@ jobs:
           uv pip install -e ".[dev]"
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
-      - name: Lint with ruff
-        run: ruff check .
-
       - name: Check dependency consistency
         run: uv pip check
-
-      - name: Check formatting with black
-        run: black --check .
 
       - name: Run tests with coverage
         run: pytest --cov
 
+      # ruff, black and Sphinx do not depend on the Python runtime version, so
+      # they run once on the lowest supported version to avoid redundant work.
+      - name: Lint with ruff
+        if: matrix.python-version == '3.10'
+        run: ruff check .
+
+      - name: Check formatting with black
+        if: matrix.python-version == '3.10'
+        run: black --check .
+
       - name: Build API documentation
+        if: matrix.python-version == '3.10'
         run: sphinx-build -W --keep-going -b html docs docs/_build/html
