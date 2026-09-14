@@ -167,6 +167,7 @@ performance experiments separately, after timing has finished.
 
 ## Documentation
 
+- [Presentation notebook](demo.ipynb)
 - [User guide](docs/usage-guide.md)
 - [Environment setup](docs/development-setup.md)
 - [Requirements-test matrix and data contracts](docs/requirements-tests-matrix.md)
