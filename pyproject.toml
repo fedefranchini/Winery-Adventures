@@ -36,6 +36,8 @@ dependencies = [
 [project.optional-dependencies]
 # Plotting is optional: pipeline execution and JSON benchmarks do not require it.
 plots = ["matplotlib>=3.8,<4"]
+# The presentation notebook needs a Jupyter kernel; IPython is installed with it.
+notebook = ["ipykernel>=6,<8"]
 # Install this group with: python -m pip install -e ".[dev]"
 dev = [
     "black>=24,<27",
@@ -46,6 +48,7 @@ dev = [
     "sphinx>=7,<9",
     "myst-parser>=3,<5",
     "matplotlib>=3.8,<4",
+    "ipykernel>=6,<8",
 ]
 
 [tool.setuptools]
