@@ -63,6 +63,25 @@ without authentication, set `WANDB_MODE=offline`. Complete examples, data
 contracts, and troubleshooting instructions are provided in the
 [user guide](docs/usage-guide.md).
 
+## Presentation notebook
+
+[`demo.ipynb`](demo.ipynb) walks through the project end to end: Kanban
+planning and architecture, validated inputs, pipeline execution, CSV
+interpretation, error handling, and performance measurements. Cell outputs are
+saved in the file, so it can be read on GitHub without installing or running
+anything.
+
+To execute it, install the notebook dependencies and select the project's
+virtual environment as the kernel:
+
+```bash
+python -m pip install -e ".[notebook]"
+```
+
+The `dev` group already includes them. Generated artifacts are written to the
+git-ignored `.verification/demo` directory, and W&B logging runs offline.
+
+
 ## Repository structure
 
 ```text
@@ -79,6 +98,7 @@ Winery-Adventures/
 ├── tests/                    # unit and acceptance tests
 ├── data/                     # sample datasets
 ├── data_generator.py         # configurable dataset generator
+├── demo.ipynb                # presentation notebook (end-to-end walkthrough)
 └── docs/                     # project documentation
     └── diagrams/             # Draw.io source and UML exports
 ```
