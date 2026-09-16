@@ -16,6 +16,7 @@ and the public API reference.
    benchmark-report
    project-management
    development-phases
+   retrospective
 
 .. toctree::
    :maxdepth: 2
