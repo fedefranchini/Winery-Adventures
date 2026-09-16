@@ -24,13 +24,9 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
-      - name: Create virtual environment
-        run: uv venv --python ${{ matrix.python-version }}
-
-      - name: Install project (with dev dependencies)
+      - name: Install project from the lock file
         run: |
-          source .venv/bin/activate
-          uv pip install -e ".[dev]"
+          uv sync --locked --extra dev --python ${{ matrix.python-version }}
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Check dependency consistency

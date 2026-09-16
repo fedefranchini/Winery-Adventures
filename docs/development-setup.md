@@ -61,6 +61,19 @@ in editable mode:
 python -m pip install -e ".[dev]"
 ```
 
+For an environment identical to the one used in continuous integration,
+install from the lock file with [uv](https://docs.astral.sh/uv/) instead:
+
+```bash
+uv sync --locked --extra dev
+```
+
+`uv.lock` pins the exact version of every direct and transitive dependency,
+so the resolution cannot drift over time. The `--locked` flag fails if the
+lock file no longer matches `pyproject.toml`. The pip command above remains
+valid and resolves the version ranges declared in `pyproject.toml`.
+
+
 In this mode, changes to the source become immediately importable without
 reinstalling the package. Then check the environment and dependencies:
 

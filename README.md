@@ -23,6 +23,9 @@ repository root:
 python -m pip install -e ".[dev]"
 ```
 
+For an environment identical to continuous integration, install from the lock
+file instead with `uv sync --locked --extra dev`.
+
 The complete procedure for macOS, Linux, and Windows is available in the
 [setup guide](docs/development-setup.md).
 
