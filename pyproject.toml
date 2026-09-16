@@ -49,6 +49,8 @@ dev = [
     "myst-parser>=3,<5",
     "matplotlib>=3.8,<4",
     "ipykernel>=6,<8",
+    # nbclient provides `jupyter execute`, used by CI to run the notebook.
+    "nbclient>=0.10,<1",
 ]
 
 [tool.setuptools]

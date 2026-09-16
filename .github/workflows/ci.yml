@@ -48,3 +48,7 @@ jobs:
       - name: Build API documentation
         if: matrix.python-version == '3.10'
         run: sphinx-build -W --keep-going -b html docs docs/_build/html
+
+      - name: Execute the presentation notebook
+        if: matrix.python-version == '3.10'
+        run: jupyter execute demo.ipynb
