@@ -186,8 +186,9 @@ performance experiments separately, after timing has finished.
 
 Development follows the Kanban methodology in the GitHub Project
 [Winery Adventures — Development](https://github.com/users/fedefranchini/projects/3).
-WBS activities are represented by draft cards `WA-01`–`WA-22`; GitHub Issues
-are not used as work items.
+WBS activities are represented by draft cards `WA-01`–`WA-22`, followed by the
+post-delivery maintenance cards `WA-23`–`WA-27`; GitHub Issues are not used as
+work items.
 
 - Workflow: `Ready` → `In Progress` → `Review / Testing` → `Done`.
 - WIP limit: at most one main task `In Progress` per team member.
