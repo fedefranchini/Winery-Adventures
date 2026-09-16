@@ -181,6 +181,7 @@ performance experiments separately, after timing has finished.
 - [Benchmark and optimization report](docs/benchmark-report.md)
 - [Project management](docs/project-management.md)
 - [Development phases](docs/development-phases.md)
+- [Retrospective](docs/retrospective.md)
 
 ## Project Management
 
