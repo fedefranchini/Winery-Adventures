@@ -40,7 +40,7 @@ plots = ["matplotlib>=3.8,<4"]
 notebook = ["ipykernel>=6,<8"]
 # Install this group with: python -m pip install -e ".[dev]"
 dev = [
-    "black>=24,<27",
+    "black[jupyter]>=24,<27",
     "pytest>=8,<10",
     "pytest-cov>=5,<8",
     "ruff>=0.5,<1",
