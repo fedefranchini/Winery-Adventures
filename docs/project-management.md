@@ -52,6 +52,22 @@ of cards:
 | WA-21 | Complete the README: installation, usage, examples, output, and troubleshooting | FedeFranchini | 3 | Medium | Documentation | WA-13, WA-20 | Backlog |
 | WA-22 | Final verification: quality, CI, aligned UML, DoD, and demo preparation | MarrasFederico | 3 | High | Testing | WA-05, WA-16–WA-21 | Backlog |
 
+### Post-delivery maintenance
+
+The WBS above covers the project up to delivery. The cards below were opened
+afterwards, in response to observations made during the final review, and follow
+the same workflow: one card, one branch, one pull request, peer review before
+merging. They are listed separately so that the effort breakdown above remains
+the one planned for the delivery.
+
+| Code | Outcome | Owner | SP | Priority | Area | Dependencies | Initial state |
+|---|---|---|---:|---|---|---|---|
+| WA-23 | Lock the dependency versions and extend the formatting check to notebooks | FedeFranchini | 3 | Medium | Architecture | WA-22 | Ready |
+| WA-24 | Execute the presentation notebook in continuous integration | FedeFranchini | 2 | Medium | Testing | WA-22, WA-23 | Ready |
+| WA-25 | Translate the presentation notebook into English | MarrasFederico | 3 | Medium | Documentation | WA-22 | Ready |
+| WA-26 | Update the GitHub Actions to runtimes that are still supported | FedeFranchini | 1 | Medium | Testing | WA-05 | Ready |
+| WA-27 | Record the post-delivery maintenance cards in the WBS and the README | FedeFranchini | 1 | Medium | Documentation | WA-23–WA-26 | Ready |
+
 ## Operational workflow
 
 1. Select a `Ready` card respecting dependencies and the WIP limit.
